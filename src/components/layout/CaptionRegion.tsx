@@ -1,9 +1,17 @@
 import React from 'react';
 import { OffthreadVideo, staticFile } from 'remotion';
+import { COMPOSITION_DEFAULTS, LAYOUT } from '../../config/theme';
 
-export const CAPTION_SAFE_PADDING = { x: 32, y: 24 };
+export const CAPTION_SAFE_PADDING = {
+  x: COMPOSITION_DEFAULTS.safeMarginX,
+  y: COMPOSITION_DEFAULTS.safeMarginY,
+  top: 28,
+  right: 48,
+  bottom: 56,
+  left: COMPOSITION_DEFAULTS.safeMarginX,
+} as const;
 
-interface CaptionRegionProps {
+export interface CaptionRegionProps {
   children?: React.ReactNode;
   facecamSrc?: string;
   blurStrength?: number;
@@ -11,35 +19,37 @@ interface CaptionRegionProps {
 }
 
 /**
- * Caption region — bottom 40% of frame.
- * Layers: portrait video continuation → blur → tint → content
+ * Caption region — bottom 40% of frame (Y = 60%–100%).
+ * Layers: pixel-aligned portrait video duplicate → blur → dark tint → safe-padded content.
  */
 export const CaptionRegion: React.FC<CaptionRegionProps> = ({
   children,
   facecamSrc,
-  blurStrength = 15,
-  tintOpacity = 0.25,
+  blurStrength = COMPOSITION_DEFAULTS.blurStrength,
+  tintOpacity = COMPOSITION_DEFAULTS.tintOpacity,
 }) => {
   return (
     <div
       style={{
         position: 'absolute',
-        top: '60%',
+        top: `${LAYOUT.captions.y * 100}%`,
         left: 0,
         width: '100%',
-        height: '40%',
+        height: `${LAYOUT.captions.h * 100}%`,
         overflow: 'hidden',
       }}
     >
-      {/* Layer 1: portrait video continuation (or dark gradient) */}
+      {/* Layer 1: duplicate portrait video aligned pixel-for-pixel with FacecamRegion (Y=40%..100%) */}
       {facecamSrc ? (
         <OffthreadVideo
           src={staticFile(facecamSrc)}
+          muted
           style={{
             position: 'absolute',
+            left: 0,
             width: '100%',
-            height: '167%',
-            top: '-67%',
+            height: '150%',
+            top: '-50%',
             objectFit: 'cover',
             zIndex: 0,
           }}
@@ -55,7 +65,7 @@ export const CaptionRegion: React.FC<CaptionRegionProps> = ({
         />
       )}
 
-      {/* Layer 2: blur */}
+      {/* Layer 2: Gaussian blur */}
       <div
         style={{
           position: 'absolute',
@@ -71,12 +81,12 @@ export const CaptionRegion: React.FC<CaptionRegionProps> = ({
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: `rgba(0,0,0,${tintOpacity})`,
+          backgroundColor: `rgba(0, 0, 0, ${tintOpacity})`,
           zIndex: 2,
         }}
       />
 
-      {/* Layer 4: content */}
+      {/* Layer 4: safe-padded captions/graphics content */}
       <div
         style={{
           position: 'absolute',
@@ -86,7 +96,7 @@ export const CaptionRegion: React.FC<CaptionRegionProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: `${CAPTION_SAFE_PADDING.y}px ${CAPTION_SAFE_PADDING.x}px`,
+          padding: `${CAPTION_SAFE_PADDING.top}px ${CAPTION_SAFE_PADDING.right}px ${CAPTION_SAFE_PADDING.bottom}px ${CAPTION_SAFE_PADDING.left}px`,
         }}
       >
         {children}

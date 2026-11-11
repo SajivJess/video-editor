@@ -45,3 +45,4 @@ export function normalizedHeightToPx(
 ): number {
   return normalizedH * height;
 }
+

@@ -1,65 +1,125 @@
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
-// @ts-ignore
-import { CaptionSegment } from '../../types/project';
-import { KineticCaption } from './KineticCaption';
-import { HighlightPill } from './HighlightPill';
+import {
+  CaptionSegment,
+  GraphicSegment,
+  ThemeSettings,
+} from '../../types/project';
+import { EditorialBadge } from '../graphics/Badge';
 import { EditorialHeadline } from './EditorialHeadline';
+import { HighlightPill } from './HighlightPill';
+import { KineticCaption } from './KineticCaption';
 import { StatCallout } from './StatCallout';
 
-interface CaptionTrackProps {
+export interface CaptionTrackProps {
   captions: CaptionSegment[];
+  graphics?: GraphicSegment[];
+  theme?: Partial<ThemeSettings>;
 }
 
-export const CaptionTrack: React.FC<CaptionTrackProps> = ({ captions }) => {
-  const frame = useCurrentFrame();
-
-  const active = captions.find(
-    (c) => frame >= c.startFrame && frame < c.endFrame
-  );
-
-  if (!active) return null;
-
-  switch (active.style) {
+const renderCaptionSegment = (
+  segment: CaptionSegment,
+  theme?: Partial<ThemeSettings>
+): React.ReactNode => {
+  switch (segment.style) {
     case 'kinetic':
       return (
         <KineticCaption
-          text={active.text}
-          keywords={active.keywords}
-          startFrame={active.startFrame}
-          endFrame={active.endFrame}
+          key={segment.id}
+          text={segment.text}
+          keywords={segment.keywords}
+          words={segment.words}
+          startFrame={segment.startFrame}
+          endFrame={segment.endFrame}
+          theme={theme}
         />
       );
     case 'pill':
       return (
         <HighlightPill
-          text={active.text}
-          keywords={active.keywords}
-          startFrame={active.startFrame}
-          endFrame={active.endFrame}
+          key={segment.id}
+          text={segment.text}
+          keywords={segment.keywords}
+          iconName={segment.iconName}
+          startFrame={segment.startFrame}
+          endFrame={segment.endFrame}
         />
       );
     case 'editorial':
       return (
         <EditorialHeadline
-          title={active.title ?? active.text}
-          subtitle={active.subtitle}
-          accentWord={active.accentWord}
-          startFrame={active.startFrame}
-          endFrame={active.endFrame}
+          key={segment.id}
+          title={segment.title ?? segment.text}
+          subtitle={segment.subtitle}
+          accentWord={segment.accentWord}
+          accentColor={theme?.highlightColor}
+          startFrame={segment.startFrame}
+          endFrame={segment.endFrame}
         />
       );
     case 'stat':
       return (
         <StatCallout
-          value={active.value ?? active.text}
-          label={active.label}
-          iconEmoji={active.iconEmoji}
-          startFrame={active.startFrame}
-          endFrame={active.endFrame}
+          key={segment.id}
+          value={segment.value ?? segment.text}
+          label={segment.label}
+          iconName={segment.iconName}
+          iconEmoji={segment.iconEmoji}
+          accentColor={theme?.highlightColor}
+          startFrame={segment.startFrame}
+          endFrame={segment.endFrame}
         />
       );
     default:
       return null;
   }
+};
+
+export const CaptionTrack: React.FC<CaptionTrackProps> = ({
+  captions,
+  graphics = [],
+  theme,
+}) => {
+  const frame = useCurrentFrame();
+
+  const activeGraphic = graphics.find(
+    (g) =>
+      g.region === 'captions' &&
+      (g.type === 'badge' || g.type === 'icon') &&
+      frame >= g.startFrame &&
+      frame < g.endFrame
+  );
+
+  const activeCaption = captions.find(
+    (c) => frame >= c.startFrame && frame < c.endFrame
+  );
+
+  if (!activeGraphic && !activeCaption) {
+    return null;
+  }
+
+  return (
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+      }}
+    >
+      {activeGraphic && (
+        <EditorialBadge
+          key={activeGraphic.id}
+          label={activeGraphic.label}
+          iconName={activeGraphic.iconName}
+          accentColor={theme?.accentColor}
+          startFrame={activeGraphic.startFrame}
+          endFrame={activeGraphic.endFrame}
+        />
+      )}
+      {activeCaption ? renderCaptionSegment(activeCaption, theme) : null}
+    </div>
+  );
 };

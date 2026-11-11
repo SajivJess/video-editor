@@ -1,5 +1,26 @@
-import React from 'react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import React, { useMemo } from 'react';
+import { useCurrentFrame, useVideoConfig } from 'remotion';
+import {
+  CaptionTrack,
+  EditorialHeadline,
+} from './components/captions';
+import { THEME } from './config/theme';
+import { CaptionSegment } from './types/project';
+
+export {
+  CaptionTrack,
+  EditorialHeadline,
+  HighlightPill,
+  KineticCaption,
+  StatCallout,
+} from './components/captions';
+export type {
+  CaptionTrackProps,
+  EditorialHeadlineProps,
+  HighlightPillProps,
+  KineticCaptionProps,
+  StatCalloutProps,
+} from './components/captions';
 
 export interface SubtitleLine {
   text: string;
@@ -15,58 +36,43 @@ export interface SubtitlesProps {
 }
 
 /**
- * Timed subtitle overlay with fade transitions and optional keyword highlighting.
+ * Backward-compatible timed subtitle wrapper delegating to `CaptionTrack`.
  */
 export const Subtitles: React.FC<SubtitlesProps> = ({ lines = [] }) => {
   const frame = useCurrentFrame();
 
-  const activeSub = lines.find(
-    (s) => frame >= s.startFrame && frame < s.endFrame
+  const captions = useMemo<CaptionSegment[]>(
+    () =>
+      lines.map((line, index) => ({
+        id: `subtitle-${index}-${line.startFrame}-${line.endFrame}`,
+        style: 'kinetic',
+        text: line.text,
+        keywords: line.highlight ? [line.highlight] : [],
+        startFrame: line.startFrame,
+        endFrame: line.endFrame,
+      })),
+    [lines]
   );
 
-  if (!activeSub) return null;
-
-  const fadeInDuration = 6;
-  const fadeOutDuration = 5;
-  const opacity = interpolate(
-    frame,
-    [
-      activeSub.startFrame,
-      activeSub.startFrame + fadeInDuration,
-      activeSub.endFrame - fadeOutDuration,
-      activeSub.endFrame,
-    ],
-    [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  const activeLine = lines.find(
+    (line) => frame >= line.startFrame && frame < line.endFrame
   );
 
-  let renderedContent: React.ReactNode = activeSub.text;
-  if (activeSub.highlight && activeSub.text.includes(activeSub.highlight)) {
-    const parts = activeSub.text.split(activeSub.highlight);
-    renderedContent = (
-      <>
-        {parts[0]}
-        <span
-          style={{
-            color: '#00d2ff',
-            fontWeight: 800,
-            textShadow: '0 0 16px rgba(0, 210, 255, 0.45)',
-          }}
-        >
-          {activeSub.highlight}
-        </span>
-        {parts.slice(1).join(activeSub.highlight)}
-      </>
-    );
+  if (!activeLine) {
+    return null;
   }
 
-  const isLeft = activeSub.align === 'left';
+  if (activeLine.yOffset === undefined && activeLine.align === undefined) {
+    return <CaptionTrack captions={captions} />;
+  }
+
+  const isLeft = activeLine.align === 'left';
 
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: activeSub.yOffset ?? 125,
+        bottom: activeLine.yOffset ?? 125,
         left: isLeft ? 80 : 0,
         right: isLeft ? 'auto' : 0,
         width: isLeft ? 740 : '100%',
@@ -75,30 +81,9 @@ export const Subtitles: React.FC<SubtitlesProps> = ({ lines = [] }) => {
         alignItems: 'center',
         pointerEvents: 'none',
         zIndex: 55,
-        opacity,
       }}
     >
-      <div
-        style={{
-          maxWidth: isLeft ? 740 : 1200,
-          background: 'rgba(7, 17, 31, 0.92)',
-          border: '1px solid rgba(48, 54, 61, 0.85)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(16px)',
-          borderRadius: 16,
-          padding: '12px 28px',
-          textAlign: isLeft ? 'left' : 'center',
-          color: '#f0f6fc',
-          fontSize: 27,
-          lineHeight: 1.35,
-          fontWeight: 600,
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-          letterSpacing: '0.2px',
-        }}
-      >
-        {renderedContent}
-      </div>
+      <CaptionTrack captions={captions} />
     </div>
   );
 };
@@ -110,23 +95,23 @@ export interface HeroProps {
   accentColor?: string;
 }
 
+const isSixDigitHex = (color: string): boolean =>
+  /^#[0-9a-fA-F]{6}$/.test(color);
+
 /**
- * Full-screen animated hero statement card for section breaks or title slides.
+ * Full-screen animated hero statement card delegating headline rendering
+ * and animation to `EditorialHeadline`.
  */
 export const HeroStatementCard: React.FC<HeroProps> = ({
   title,
   highlightTitle,
   subtitle,
-  accentColor = '#00d2ff',
+  accentColor = THEME.accentColor,
 }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const entrance = spring({
-    frame,
-    fps,
-    config: { damping: 14, mass: 0.5, stiffness: 100 },
-  });
+  const { durationInFrames } = useVideoConfig();
+  const combinedTitle = highlightTitle
+    ? `${title} ${highlightTitle}`.trim()
+    : title;
 
   return (
     <div
@@ -139,8 +124,7 @@ export const HeroStatementCard: React.FC<HeroProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 45,
-        padding: '0 100px',
-        textAlign: 'center',
+        padding: '0 64px',
       }}
     >
       <div
@@ -149,69 +133,22 @@ export const HeroStatementCard: React.FC<HeroProps> = ({
           width: 750,
           height: 750,
           borderRadius: '50%',
-          background: `radial-gradient(circle, ${accentColor}25 0%, rgba(0,0,0,0) 70%)`,
+          background: isSixDigitHex(accentColor)
+            ? `radial-gradient(circle, ${accentColor}25 0%, rgba(0,0,0,0) 70%)`
+            : `radial-gradient(circle, ${THEME.accentColor}25 0%, rgba(0,0,0,0) 70%)`,
           filter: 'blur(100px)',
           pointerEvents: 'none',
         }}
       />
 
-      <div
-        style={{
-          transform: `scale(${interpolate(entrance, [0, 1], [0.92, 1])})`,
-          opacity: entrance,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 20,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 72,
-            fontWeight: 900,
-            lineHeight: 1.1,
-            color: '#ffffff',
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            maxWidth: 1400,
-          }}
-        >
-          {title}{' '}
-          {highlightTitle && (
-            <span
-              style={{
-                color: accentColor,
-                textShadow: `0 0 35px ${accentColor}60`,
-              }}
-            >
-              {highlightTitle}
-            </span>
-          )}
-        </div>
-
-        <div
-          style={{
-            fontSize: 26,
-            fontWeight: 500,
-            color: '#8b949e',
-            letterSpacing: '0.5px',
-            maxWidth: 900,
-            lineHeight: 1.4,
-          }}
-        >
-          {subtitle}
-        </div>
-
-        <div
-          style={{
-            marginTop: 15,
-            height: 3,
-            width: 140,
-            background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
-            borderRadius: 2,
-          }}
-        />
-      </div>
+      <EditorialHeadline
+        title={combinedTitle}
+        subtitle={subtitle}
+        accentWord={highlightTitle}
+        accentColor={accentColor}
+        startFrame={0}
+        endFrame={Math.max(1, durationInFrames)}
+      />
     </div>
   );
 };

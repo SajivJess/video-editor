@@ -1,30 +1,52 @@
 import React from 'react';
 import {
-  useCurrentFrame,
-  useVideoConfig,
-  interpolate,
   Img,
   OffthreadVideo,
+  interpolate,
   staticFile,
+  useCurrentFrame,
+  useVideoConfig,
 } from 'remotion';
+import { LAYOUT } from '../../config/theme';
+import { VisualSegment } from '../../types/project';
+import { VisualTrack } from '../visuals';
 
-interface BrollRegionProps {
+export interface BrollRegionProps {
   src?: string;
+  visuals?: VisualSegment[];
   startFrame?: number;
   kenBurns?: boolean;
 }
 
 function isVideoSrc(src: string): boolean {
-  return /\.(mp4|mov|webm)$/i.test(src);
+  return /\.(mp4|mov|webm)$/i.test(src.split('?')[0]);
 }
 
 export const BrollRegion: React.FC<BrollRegionProps> = ({
   src,
+  visuals,
   startFrame = 0,
   kenBurns = false,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
+
+  const containerStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: `${LAYOUT.visuals.y * 100}%`,
+    left: 0,
+    width: '100%',
+    height: `${LAYOUT.visuals.h * 100}%`,
+    overflow: 'hidden',
+  };
+
+  if (visuals && visuals.length > 0) {
+    return (
+      <div style={containerStyle}>
+        <VisualTrack visuals={visuals} />
+      </div>
+    );
+  }
 
   const scale = kenBurns
     ? interpolate(frame - startFrame, [0, durationInFrames], [1.0, 1.08], {
@@ -32,15 +54,6 @@ export const BrollRegion: React.FC<BrollRegionProps> = ({
         extrapolateRight: 'clamp',
       })
     : 1;
-
-  const containerStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '40%',
-    overflow: 'hidden',
-  };
 
   const mediaStyle: React.CSSProperties = {
     width: '100%',
@@ -51,22 +64,17 @@ export const BrollRegion: React.FC<BrollRegionProps> = ({
   };
 
   if (src) {
-    if (isVideoSrc(src)) {
-      return (
-        <div style={containerStyle}>
-          <OffthreadVideo src={staticFile(src)} style={mediaStyle} />
-        </div>
-      );
-    } else {
-      return (
-        <div style={containerStyle}>
+    return (
+      <div style={containerStyle}>
+        {isVideoSrc(src) ? (
+          <OffthreadVideo src={staticFile(src)} muted style={mediaStyle} />
+        ) : (
           <Img src={staticFile(src)} style={mediaStyle} />
-        </div>
-      );
-    }
+        )}
+      </div>
+    );
   }
 
-  // Placeholder
   return (
     <div
       style={{

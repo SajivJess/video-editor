@@ -1,13 +1,18 @@
 import React from 'react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { useCurrentFrame } from 'remotion';
+import { THEME } from '../../config/theme';
+import { IconName } from '../../types/project';
 import { highlightKeywords } from '../../utils/text';
+import { useFadeInOut, useSpringScale } from '../animations';
+import { VectorIcon } from '../graphics/Icons';
 
-interface HighlightPillProps {
+export interface HighlightPillProps {
   text: string;
   keywords?: string[];
   startFrame: number;
   endFrame: number;
   pillColor?: string;
+  iconName?: IconName;
 }
 
 export const HighlightPill: React.FC<HighlightPillProps> = ({
@@ -16,27 +21,15 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
   startFrame,
   endFrame,
   pillColor,
+  iconName,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const opacity = useFadeInOut(startFrame, endFrame, 10, 6);
+  const scale = useSpringScale(startFrame, 0.88, 1);
 
-  const localFrame = frame - startFrame;
-  const duration = endFrame - startFrame;
-
-  const entranceSpring = spring({
-    frame: localFrame,
-    fps,
-    config: { damping: 14, stiffness: 90 },
-  });
-
-  const scale = interpolate(entranceSpring, [0, 1], [0.88, 1]);
-
-  const opacity = interpolate(
-    localFrame,
-    [0, 10, duration - 6, duration],
-    [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
+  if (frame < startFrame || frame >= endFrame) {
+    return null;
+  }
 
   const tokens = highlightKeywords(text, keywords);
 
@@ -45,29 +38,59 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
       style={{
         opacity,
         transform: `scale(${scale})`,
+        display: 'inline-flex',
+        flexDirection: 'row',
+        flexWrap: 'nowrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
         borderRadius: 999,
         background: pillColor ?? '#1a1a2e',
-        border: '2px solid rgba(255,255,255,0.15)',
+        border: '2px solid rgba(255,255,255,0.18)',
+        boxShadow: THEME.shadowStyle,
         padding: '14px 32px',
-        textAlign: 'center',
-        maxWidth: '90%',
+        maxWidth: '92%',
       }}
     >
+      {iconName && (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <VectorIcon name={iconName} size="sm" color="#FFD700" />
+        </span>
+      )}
       <span
         style={{
+          minWidth: 0,
+          whiteSpace: 'normal',
+          overflowWrap: 'break-word',
+          textAlign: iconName ? 'left' : 'center',
           fontSize: 32,
-          fontWeight: 800,
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+          fontWeight: THEME.fontWeight,
+          lineHeight: 1.3,
+          fontFamily: THEME.fontFamily,
+          color: THEME.primaryText,
         }}
       >
-        {tokens.map((token, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && ' '}
+        {tokens.map((token, index) => (
+          <React.Fragment key={`${token.word}-${index}`}>
+            {index > 0 && ' '}
             {token.highlight ? (
-              <span style={{ color: '#FFD700' }}>{token.word}</span>
+              <span
+                style={{
+                  color: THEME.highlightColor,
+                  fontWeight: 900,
+                }}
+              >
+                {token.word}
+              </span>
             ) : (
-              <span style={{ color: '#FFFFFF' }}>{token.word}</span>
+              <span style={{ color: THEME.primaryText }}>{token.word}</span>
             )}
           </React.Fragment>
         ))}

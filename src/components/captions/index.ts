@@ -1,5 +1,10 @@
-export { KineticCaption } from './KineticCaption';
-export { HighlightPill } from './HighlightPill';
-export { EditorialHeadline } from './EditorialHeadline';
-export { StatCallout } from './StatCallout';
 export { CaptionTrack } from './CaptionTrack';
+export type { CaptionTrackProps } from './CaptionTrack';
+export { EditorialHeadline } from './EditorialHeadline';
+export type { EditorialHeadlineProps } from './EditorialHeadline';
+export { HighlightPill } from './HighlightPill';
+export type { HighlightPillProps } from './HighlightPill';
+export { KineticCaption } from './KineticCaption';
+export type { KineticCaptionProps } from './KineticCaption';
+export { StatCallout } from './StatCallout';
+export type { StatCalloutProps } from './StatCallout';

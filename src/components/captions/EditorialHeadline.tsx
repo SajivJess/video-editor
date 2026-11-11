@@ -1,13 +1,68 @@
 import React from 'react';
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { useCurrentFrame } from 'remotion';
+import { THEME } from '../../config/theme';
+import { useFadeInOut, useSlide, useSpringScale } from '../animations';
 
-interface EditorialHeadlineProps {
+export interface EditorialHeadlineProps {
   title: string;
   subtitle?: string;
   accentWord?: string;
   startFrame: number;
   endFrame: number;
+  accentColor?: string;
 }
+
+const isSixDigitHex = (color: string): boolean =>
+  /^#[0-9a-fA-F]{6}$/.test(color);
+
+const renderHighlightedTitle = (
+  title: string,
+  accentWord: string | undefined,
+  highlightColor: string
+): React.ReactNode => {
+  const displayTitle = title.normalize('NFC').toUpperCase();
+  const trimmedAccent = accentWord?.normalize('NFC').trim();
+
+  if (!trimmedAccent) {
+    return displayTitle;
+  }
+
+  const accentUpper = trimmedAccent.toUpperCase();
+  let matchIndex = displayTitle.indexOf(accentUpper);
+  if (matchIndex === -1) {
+    return displayTitle;
+  }
+
+  const parts: React.ReactNode[] = [];
+  let cursor = 0;
+
+  while (matchIndex !== -1) {
+    if (matchIndex > cursor) {
+      parts.push(displayTitle.slice(cursor, matchIndex));
+    }
+    parts.push(
+      <span
+        key={`accent-${matchIndex}`}
+        style={{
+          color: highlightColor,
+          textShadow: isSixDigitHex(highlightColor)
+            ? `0 2px 16px rgba(0,0,0,0.7), 0 0 24px ${highlightColor}40`
+            : THEME.shadowStyle,
+        }}
+      >
+        {displayTitle.slice(matchIndex, matchIndex + accentUpper.length)}
+      </span>
+    );
+    cursor = matchIndex + accentUpper.length;
+    matchIndex = displayTitle.indexOf(accentUpper, cursor);
+  }
+
+  if (cursor < displayTitle.length) {
+    parts.push(displayTitle.slice(cursor));
+  }
+
+  return <>{parts}</>;
+};
 
 export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
   title,
@@ -15,57 +70,31 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
   accentWord,
   startFrame,
   endFrame,
+  accentColor,
 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const opacity = useFadeInOut(startFrame, endFrame, 12, 6);
+  const scale = useSpringScale(startFrame, 0.9, 1);
+  const slideTransform = useSlide(startFrame, 30, 'y');
 
-  const localFrame = frame - startFrame;
-  const duration = endFrame - startFrame;
-
-  const entranceSpring = spring({
-    frame: localFrame,
-    fps,
-    config: { damping: 14, stiffness: 90 },
-  });
-
-  const scale = interpolate(entranceSpring, [0, 1], [0.9, 1]);
-  const translateY = interpolate(entranceSpring, [0, 1], [30, 0]);
-
-  const opacity = interpolate(
-    localFrame,
-    [0, 12, duration - 6, duration],
-    [0, 1, 1, 0],
-    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-  );
-
-  // Split title to highlight accentWord
-  let titleContent: React.ReactNode = title.toUpperCase();
-  if (accentWord) {
-    const upper = title.toUpperCase();
-    const accentUpper = accentWord.toUpperCase();
-    const idx = upper.indexOf(accentUpper);
-    if (idx !== -1) {
-      titleContent = (
-        <>
-          {upper.slice(0, idx)}
-          <span style={{ color: '#FFD700' }}>{upper.slice(idx, idx + accentUpper.length)}</span>
-          {upper.slice(idx + accentUpper.length)}
-        </>
-      );
-    }
+  if (frame < startFrame || frame >= endFrame) {
+    return null;
   }
+
+  const highlightColor = accentColor ?? THEME.highlightColor;
+  const titleContent = renderHighlightedTitle(title, accentWord, highlightColor);
 
   return (
     <div
       style={{
         opacity,
-        transform: `scale(${scale}) translateY(${translateY}px)`,
+        transform: `${slideTransform} scale(${scale})`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: 12,
         textAlign: 'center',
-        maxWidth: '90%',
+        maxWidth: '92%',
       }}
     >
       <div
@@ -73,21 +102,22 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
           fontSize: 56,
           fontWeight: 900,
           textTransform: 'uppercase',
-          color: '#FFFFFF',
-          lineHeight: 1.1,
-          fontFamily:
-            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+          color: THEME.primaryText,
+          lineHeight: 1.15,
+          fontFamily: THEME.fontFamily,
+          textShadow: THEME.shadowStyle,
+          whiteSpace: 'normal',
+          overflowWrap: 'break-word',
         }}
       >
         {titleContent}
       </div>
 
-      {/* Underline bar */}
       <div
         style={{
           width: 60,
           height: 4,
-          background: 'linear-gradient(90deg, #FFD700, #00D2FF)',
+          background: `linear-gradient(90deg, ${highlightColor}, ${THEME.accentColor})`,
           borderRadius: 2,
         }}
       />
@@ -96,10 +126,12 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
         <div
           style={{
             fontSize: 24,
-            color: 'rgba(255,255,255,0.75)',
-            fontWeight: 500,
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+            color: 'rgba(255,255,255,0.8)',
+            fontWeight: 600,
+            lineHeight: 1.35,
+            fontFamily: THEME.fontFamily,
+            whiteSpace: 'normal',
+            overflowWrap: 'break-word',
           }}
         >
           {subtitle}

@@ -5,9 +5,11 @@
   "main": "src/index.ts",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "review": "remotion render src/index.ts MainVideo Output/review.mp4",
-    "build": "remotion render src/index.ts MainVideo Output/final.mp4",
-    "still": "remotion still src/index.ts MainVideo Output/preview.jpg"
+    "review": "remotion render src/index.ts ReelDemo Output/demo_reel_review.mp4",
+    "build": "remotion render src/index.ts ReelBase Output/final.mp4",
+    "still": "remotion still src/index.ts ReelDemo Output/preview.jpg",
+    "test": "node --test tests/engine.test.ts",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",

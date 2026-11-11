@@ -1,7 +1,24 @@
 import React from 'react';
-import { Composition } from 'remotion';
+import { CalculateMetadataFunction, Composition } from 'remotion';
+import {
+  DemoComposition,
+  ReelComposition,
+  ReelCompositionProps,
+  TOTAL_FRAMES,
+  sampleProject,
+} from './Composition';
 import { COMPOSITION_DEFAULTS } from './config/index';
-import { ReelComposition, DemoComposition, sampleProject } from './Composition';
+
+const calculateReelMetadata: CalculateMetadataFunction<ReelCompositionProps> = ({
+  props,
+}) => {
+  return {
+    durationInFrames: props.project.composition.durationFrames,
+    fps: props.project.composition.fps,
+    width: props.project.composition.width,
+    height: props.project.composition.height,
+  };
+};
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -12,16 +29,16 @@ export const RemotionRoot: React.FC = () => {
         width={COMPOSITION_DEFAULTS.width}
         height={COMPOSITION_DEFAULTS.height}
         fps={COMPOSITION_DEFAULTS.fps}
-        durationInFrames={270}
+        durationInFrames={TOTAL_FRAMES}
       />
       <Composition
         id="ReelBase"
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        component={ReelComposition as any}
+        component={ReelComposition}
         width={COMPOSITION_DEFAULTS.width}
         height={COMPOSITION_DEFAULTS.height}
         fps={COMPOSITION_DEFAULTS.fps}
-        durationInFrames={270}
+        durationInFrames={TOTAL_FRAMES}
+        calculateMetadata={calculateReelMetadata}
         defaultProps={{ project: sampleProject }}
       />
     </>

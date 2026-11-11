@@ -1,0 +1,85 @@
+import type { VideoProject } from '../types/project';
+
+export const DEMO_DURATION_FRAMES = 270;
+
+export const sampleProject: VideoProject = {
+  version: 1,
+  composition: {
+    width: 1080,
+    height: 1920,
+    fps: 30,
+    durationFrames: DEMO_DURATION_FRAMES,
+    blurStrength: 15,
+    tintOpacity: 0.25,
+    safeMarginX: 40,
+    safeMarginY: 48,
+  },
+  media: {},
+  visuals: [],
+  graphics: [
+    {
+      id: 'gfx-1',
+      type: 'badge',
+      label: 'CYBER SAFETY ALERT',
+      iconName: 'shield',
+      startFrame: 120,
+      endFrame: 180,
+      region: 'captions',
+    },
+  ],
+  captions: [
+    {
+      id: 'cap-1',
+      style: 'kinetic',
+      text: 'AI VOICE SCAM ஆல்',
+      keywords: ['AI VOICE SCAM'],
+      words: [
+        { word: 'AI', startFrame: 0, endFrame: 15 },
+        { word: 'VOICE', startFrame: 15, endFrame: 30 },
+        { word: 'SCAM', startFrame: 30, endFrame: 45 },
+        { word: 'ஆல்', startFrame: 45, endFrame: 60 },
+      ],
+      startFrame: 0,
+      endFrame: 60,
+    },
+    {
+      id: 'cap-2',
+      style: 'pill',
+      text: '₹1.2 LAKH இழந்தார்',
+      keywords: ['₹1.2 LAKH'],
+      iconName: 'currency',
+      startFrame: 60,
+      endFrame: 120,
+    },
+    {
+      id: 'cap-3',
+      style: 'editorial',
+      text: 'VOICE CLONE ALERT',
+      title: 'VOICE CLONE ALERT',
+      accentWord: 'ALERT',
+      subtitle: 'Verify before transferring money',
+      keywords: ['ALERT'],
+      startFrame: 120,
+      endFrame: 180,
+    },
+    {
+      id: 'cap-4',
+      style: 'stat',
+      text: '₹1,20,000',
+      value: '₹1,20,000',
+      label: 'TOTAL LOSS',
+      iconName: 'warning',
+      keywords: [],
+      startFrame: 180,
+      endFrame: 240,
+    },
+    {
+      id: 'cap-5',
+      style: 'kinetic',
+      text: 'Stay safe online!',
+      keywords: ['Stay safe'],
+      startFrame: 240,
+      endFrame: 270,
+    },
+  ],
+};
