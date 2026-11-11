@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Remotion build & render outputs
+build/
+.remotion/
+Output/*
+!Output/.gitkeep
+
+# Media & raw footage (keep directory via .gitkeep)
+Raw Clips/*
+!Raw Clips/.gitkeep
+
+# Logs & OS files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,24 @@
+{
+  "name": "video-editor",
+  "version": "1.0.0",
+  "description": "Remotion Video Editing Framework",
+  "main": "src/index.ts",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "review": "remotion render src/index.ts MainVideo Output/review.mp4",
+    "build": "remotion render src/index.ts MainVideo Output/final.mp4",
+    "still": "remotion still src/index.ts MainVideo Output/preview.jpg"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@remotion/cli": "^4.0.540",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "^4.0.540",
+    "typescript": "^5.6.3"
+  }
+}
