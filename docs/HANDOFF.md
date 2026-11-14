@@ -181,6 +181,16 @@ provider quotas or successful live inference. Setup normally chooses port 4317;
 an unconfigured dashboard defaults to 127.0.0.1:3000. Read the startup output.
 `npm.cmd` avoids PowerShell's `npm.ps1` execution-policy issue without changing it.
 
+For manual configuration, copy the root `.env.example` to `.env` and fill the
+required Gemini key and studio password locally. It includes the proposed Dell
+runtime settings, optional failover keys and optional OpenRouter writer settings.
+It contains no old credentials. An empty password deliberately prevents startup
+because the template enables `REQUIRE_AUTH=true`. A root `.env` takes precedence
+over the setup-generated `ai.env`, including empty values: use one configuration
+method, or remove the empty root `.env` before using `ai:setup`. Existing process
+environment values have higher precedence than either file. Keep the filled
+`.env` private; it is ignored by Git. Neither method configures hosting or ngrok.
+
 Before unattended use, benchmark a full new upload and saved project at
 1080 x 1920; inspect frames/audio, ASR accuracy, time, memory and thermals.
 Test restart/retry and missing-evidence/quota/low-disk failures. Then configure a
