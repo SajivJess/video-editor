@@ -1,9 +1,11 @@
+import type { ThemeSettings } from '../../types/project';
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { THEME } from '../../config/theme';
 import { useFadeInOut, useSlide, useSpringScale } from '../animations';
 
 export interface EditorialHeadlineProps {
+  theme?: Partial<ThemeSettings>;
   title: string;
   subtitle?: string;
   accentWord?: string;
@@ -65,6 +67,7 @@ const renderHighlightedTitle = (
 };
 
 export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
+  theme,
   title,
   subtitle,
   accentWord,
@@ -72,6 +75,7 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
   endFrame,
   accentColor,
 }) => {
+  const resolved = { ...THEME, ...theme };
   const frame = useCurrentFrame();
   const opacity = useFadeInOut(startFrame, endFrame, 12, 6);
   const scale = useSpringScale(startFrame, 0.9, 1);
@@ -81,7 +85,7 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
     return null;
   }
 
-  const highlightColor = accentColor ?? THEME.highlightColor;
+  const highlightColor = accentColor ?? resolved.highlightColor;
   const titleContent = renderHighlightedTitle(title, accentWord, highlightColor);
 
   return (
@@ -99,13 +103,13 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
     >
       <div
         style={{
-          fontSize: 56,
+          fontSize: resolved.captionFontSize ?? 56,
           fontWeight: 900,
           textTransform: 'uppercase',
-          color: THEME.primaryText,
+          color: resolved.primaryText,
           lineHeight: 1.15,
-          fontFamily: THEME.fontFamily,
-          textShadow: THEME.shadowStyle,
+          fontFamily: resolved.fontFamily,
+          textShadow: resolved.shadowStyle,
           whiteSpace: 'normal',
           overflowWrap: 'break-word',
         }}
@@ -117,7 +121,7 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
         style={{
           width: 60,
           height: 4,
-          background: `linear-gradient(90deg, ${highlightColor}, ${THEME.accentColor})`,
+          background: `linear-gradient(90deg, ${highlightColor}, ${resolved.accentColor})`,
           borderRadius: 2,
         }}
       />
@@ -129,7 +133,7 @@ export const EditorialHeadline: React.FC<EditorialHeadlineProps> = ({
             color: 'rgba(255,255,255,0.8)',
             fontWeight: 600,
             lineHeight: 1.35,
-            fontFamily: THEME.fontFamily,
+            fontFamily: resolved.fontFamily,
             whiteSpace: 'normal',
             overflowWrap: 'break-word',
           }}

@@ -1,3 +1,4 @@
+import type { ThemeSettings } from '../../types/project';
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { THEME } from '../../config/theme';
@@ -6,6 +7,7 @@ import { useFadeInOut, usePulse, useSpringScale } from '../animations';
 import { VectorIcon } from '../graphics/Icons';
 
 export interface StatCalloutProps {
+  theme?: Partial<ThemeSettings>;
   value: string;
   label?: string;
   iconName?: IconName;
@@ -16,6 +18,7 @@ export interface StatCalloutProps {
 }
 
 export const StatCallout: React.FC<StatCalloutProps> = ({
+  theme,
   value,
   label,
   iconName,
@@ -24,6 +27,7 @@ export const StatCallout: React.FC<StatCalloutProps> = ({
   endFrame,
   accentColor,
 }) => {
+  const resolved = { ...THEME, ...theme };
   const frame = useCurrentFrame();
   const opacity = useFadeInOut(startFrame, endFrame, 15, 6);
   const scale = useSpringScale(startFrame, 0.75, 1);
@@ -33,7 +37,7 @@ export const StatCallout: React.FC<StatCalloutProps> = ({
     return null;
   }
 
-  const color = accentColor ?? THEME.highlightColor;
+  const color = accentColor ?? resolved.highlightColor;
 
   return (
     <div
@@ -50,7 +54,7 @@ export const StatCallout: React.FC<StatCalloutProps> = ({
         gap: 10,
         textAlign: 'center',
         maxWidth: '92%',
-        boxShadow: `0 0 40px rgba(255,215,0,${glowIntensity * 0.4}), ${THEME.shadowStyle}`,
+        boxShadow: `0 0 40px rgba(255,215,0,${glowIntensity * 0.4}), ${resolved.shadowStyle}`,
       }}
     >
       {iconName ? (
@@ -61,11 +65,11 @@ export const StatCallout: React.FC<StatCalloutProps> = ({
 
       <div
         style={{
-          fontSize: 72,
+          fontSize: resolved.captionFontSize ?? 72,
           fontWeight: 900,
           color,
           lineHeight: 1.05,
-          fontFamily: THEME.fontFamily,
+          fontFamily: resolved.fontFamily,
           whiteSpace: 'normal',
           overflowWrap: 'break-word',
         }}
@@ -82,7 +86,7 @@ export const StatCallout: React.FC<StatCalloutProps> = ({
             letterSpacing: '2px',
             color: 'rgba(255,255,255,0.85)',
             lineHeight: 1.3,
-            fontFamily: THEME.fontFamily,
+            fontFamily: resolved.fontFamily,
             whiteSpace: 'normal',
             overflowWrap: 'break-word',
           }}

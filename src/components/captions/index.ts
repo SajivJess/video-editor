@@ -6,5 +6,7 @@ export { HighlightPill } from './HighlightPill';
 export type { HighlightPillProps } from './HighlightPill';
 export { KineticCaption } from './KineticCaption';
 export type { KineticCaptionProps } from './KineticCaption';
+export { ModernCaption } from './ModernCaption';
+export type { ModernCaptionProps, ModernWord } from './ModernCaption';
 export { StatCallout } from './StatCallout';
 export type { StatCalloutProps } from './StatCallout';

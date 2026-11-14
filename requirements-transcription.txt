@@ -1,0 +1,4 @@
+faster-whisper==1.2.1
+indic-transliteration==2.3.82
+imageio-ffmpeg==0.8.1
+av>=14,<17

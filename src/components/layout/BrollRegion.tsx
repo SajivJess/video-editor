@@ -1,19 +1,22 @@
+import { mediaSource } from '../../utils/media';
 import React from 'react';
 import {
   Img,
   OffthreadVideo,
   interpolate,
-  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
 import { LAYOUT } from '../../config/theme';
-import { VisualSegment } from '../../types/project';
+import { GraphicSegment, ThemeSettings, VisualSegment } from '../../types/project';
 import { VisualTrack } from '../visuals';
+import { EditorialBadge } from '../graphics/Badge';
 
 export interface BrollRegionProps {
   src?: string;
   visuals?: VisualSegment[];
+  graphics?: GraphicSegment[];
+  theme?: Partial<ThemeSettings>;
   startFrame?: number;
   kenBurns?: boolean;
 }
@@ -25,11 +28,41 @@ function isVideoSrc(src: string): boolean {
 export const BrollRegion: React.FC<BrollRegionProps> = ({
   src,
   visuals,
+  graphics = [],
+  theme,
   startFrame = 0,
   kenBurns = false,
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
+
+  const activeGraphic = graphics.find(
+    (g) => frame >= g.startFrame && frame < g.endFrame
+  );
+
+  const graphicOverlay = activeGraphic && (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 32px',
+      }}
+    >
+      <EditorialBadge
+        key={activeGraphic.id}
+        label={activeGraphic.label}
+        iconName={activeGraphic.iconName}
+        accentColor={theme?.accentColor}
+        size="lg"
+        startFrame={activeGraphic.startFrame}
+        endFrame={activeGraphic.endFrame}
+      />
+    </div>
+  );
 
   const containerStyle: React.CSSProperties = {
     position: 'absolute',
@@ -44,6 +77,7 @@ export const BrollRegion: React.FC<BrollRegionProps> = ({
     return (
       <div style={containerStyle}>
         <VisualTrack visuals={visuals} />
+        {graphicOverlay}
       </div>
     );
   }
@@ -67,10 +101,11 @@ export const BrollRegion: React.FC<BrollRegionProps> = ({
     return (
       <div style={containerStyle}>
         {isVideoSrc(src) ? (
-          <OffthreadVideo src={staticFile(src)} muted style={mediaStyle} />
+          <OffthreadVideo src={mediaSource(src)} muted style={mediaStyle} />
         ) : (
-          <Img src={staticFile(src)} style={mediaStyle} />
+          <Img src={mediaSource(src)} style={mediaStyle} />
         )}
+        {graphicOverlay}
       </div>
     );
   }
@@ -80,22 +115,9 @@ export const BrollRegion: React.FC<BrollRegionProps> = ({
       style={{
         ...containerStyle,
         background: 'linear-gradient(180deg, #0d1a2a 0%, #1a2a3a 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
       }}
     >
-      <span
-        style={{
-          fontFamily: 'monospace',
-          fontSize: 18,
-          color: '#00D2FF',
-          letterSpacing: '2px',
-          opacity: 0.6,
-        }}
-      >
-        STORY VISUALS
-      </span>
+      {graphicOverlay}
     </div>
   );
 };

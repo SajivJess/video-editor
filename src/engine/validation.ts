@@ -1,14 +1,24 @@
 import {
   AnimationSettings,
+  EntityAsset,
+  EditBeat,
+  SceneTransition,
+  TransitionName,
   AudioTrackConfig,
+  CameraMove,
+  CameraMoveType,
   CaptionPreset,
   CaptionSegment,
   CompositionSettings,
   GraphicSegment,
+  GraphicType,
   IconName,
+  InterstitialSegment,
   KenBurnsConfig,
+  LogoSpotlightConfig,
   MediaAsset,
   MediaDictionary,
+  PersonPictorialConfig,
   SfxSegment,
   ThemeSettings,
   VideoProject,
@@ -22,6 +32,7 @@ export const SUPPORTED_IMAGE_EXTENSIONS = [
   '.jpeg',
   '.png',
   '.webp',
+  '.svg',
 ] as const;
 export const SUPPORTED_AUDIO_EXTENSIONS = [
   '.wav',
@@ -48,6 +59,8 @@ const VALID_ICON_NAMES: ReadonlySet<IconName> = new Set<IconName>([
   'lock',
   'check',
   'chart',
+  'sparkle',
+  'chip',
 ]);
 
 const VALID_CAPTION_STYLES: ReadonlySet<CaptionSegment['style']> = new Set([
@@ -55,6 +68,7 @@ const VALID_CAPTION_STYLES: ReadonlySet<CaptionSegment['style']> = new Set([
   'pill',
   'editorial',
   'stat',
+  'modern',
 ]);
 
 const VALID_CAPTION_PRESETS: ReadonlySet<CaptionPreset> = new Set([
@@ -64,16 +78,43 @@ const VALID_CAPTION_PRESETS: ReadonlySet<CaptionPreset> = new Set([
   'data-callout',
 ]);
 
-const VALID_TRANSITIONS: ReadonlySet<'cut' | 'fade' | 'slide'> = new Set([
+const VALID_TRANSITIONS: ReadonlySet<TransitionName> = new Set([
   'cut',
   'fade',
   'slide',
+  'zoom', 'zoom-through', 'whip-pan', 'flash', 'diagonal-wipe',
 ]);
 
-const VALID_GRAPHIC_TYPES: ReadonlySet<GraphicSegment['type']> = new Set([
+const VALID_GRAPHIC_TYPES: ReadonlySet<GraphicType> = new Set([
   'icon',
   'badge',
   'stat-card',
+  'stat',
+  'logo-spotlight',
+  'person-pictorial',
+  'collage-card',
+  'step-card',
+  'process-diagram',
+  'comparison',
+]);
+
+const VALID_CAMERA_MOVE_TYPES: ReadonlySet<CameraMoveType> = new Set([
+  'hold',
+  'slow-zoom-in',
+  'slow-zoom-out',
+  'sudden-zoom',
+  'pan',
+  'whip-pan',
+  'micro-shake',
+]);
+
+const VALID_INTERSTITIAL_TRANSITIONS: ReadonlySet<NonNullable<InterstitialSegment['transitionIn']>> = new Set([
+  'cut',
+  'fade',
+  'slide',
+  'zoom-through',
+  'whip-pan',
+  'flash', 'zoom', 'diagonal-wipe',
 ]);
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -132,6 +173,12 @@ function extractExtension(src: string): string {
   return filename.slice(dotIdx).toLowerCase();
 }
 
+function assertNonNegativeInteger(value: unknown, field: string): number {
+  const number = assertNonNegativeNumber(value, field);
+  if (!Number.isInteger(number)) throw new Error(`${field} must be an integer`);
+  return number;
+}
+
 function assertSupportedExtension(
   src: string,
   allowedExtensions: readonly string[],
@@ -153,6 +200,9 @@ function assertFrameRange(
 ): { startFrame: number; endFrame: number } {
   const start = assertFiniteNumber(startFrame, `${context}.startFrame`);
   const end = assertFiniteNumber(endFrame, `${context}.endFrame`);
+  if (!Number.isInteger(start) || !Number.isInteger(end)) {
+    throw new Error(`${context}: frame positions must be integers`);
+  }
 
   if (start < 0) {
     throw new Error(`${context}: startFrame (${start}) must be >= 0`);
@@ -199,7 +249,11 @@ function validateWordTiming(
     context,
     durationFrames
   );
-  return { word: wordText, startFrame, endFrame };
+  if (word.emphasis !== undefined && typeof word.emphasis !== 'boolean') {
+    throw new Error(`${context}.emphasis must be a boolean`);
+  }
+  return { word: wordText, startFrame, endFrame,
+    ...(word.emphasis !== undefined ? { emphasis: word.emphasis } : {}) };
 }
 
 function validateAnimationSettings(
@@ -236,21 +290,21 @@ function validateKenBurnsConfig(
   if (!isPlainObject(kb)) {
     throw new Error(`${context} must be an object`);
   }
-  const fromScale = assertPositiveNumber(kb.fromScale, `${context}.fromScale`);
-  const toScale = assertPositiveNumber(kb.toScale, `${context}.toScale`);
+  const fromScale = assertPositiveNumber(kb.fromScale ?? kb.startScale ?? 1, `${context}.fromScale`);
+  const toScale = assertPositiveNumber(kb.toScale ?? kb.endScale ?? 1.08, `${context}.toScale`);
   const result: KenBurnsConfig = { fromScale, toScale };
 
-  if (kb.fromX !== undefined) {
-    result.fromX = assertFiniteNumber(kb.fromX, `${context}.fromX`);
+  if (kb.fromX !== undefined || kb.startX !== undefined) {
+    result.fromX = assertFiniteNumber(kb.fromX ?? kb.startX, `${context}.fromX`);
   }
-  if (kb.toX !== undefined) {
-    result.toX = assertFiniteNumber(kb.toX, `${context}.toX`);
+  if (kb.toX !== undefined || kb.endX !== undefined) {
+    result.toX = assertFiniteNumber(kb.toX ?? kb.endX, `${context}.toX`);
   }
-  if (kb.fromY !== undefined) {
-    result.fromY = assertFiniteNumber(kb.fromY, `${context}.fromY`);
+  if (kb.fromY !== undefined || kb.startY !== undefined) {
+    result.fromY = assertFiniteNumber(kb.fromY ?? kb.startY, `${context}.fromY`);
   }
-  if (kb.toY !== undefined) {
-    result.toY = assertFiniteNumber(kb.toY, `${context}.toY`);
+  if (kb.toY !== undefined || kb.endY !== undefined) {
+    result.toY = assertFiniteNumber(kb.toY ?? kb.endY, `${context}.toY`);
   }
 
   return result;
@@ -272,7 +326,7 @@ export function validateCaptionSegment(
     !VALID_CAPTION_STYLES.has(seg.style as CaptionSegment['style'])
   ) {
     throw new Error(
-      `${ctx}.style must be one of 'kinetic' | 'pill' | 'editorial' | 'stat'`
+      `${ctx}.style must be one of 'kinetic' | 'pill' | 'editorial' | 'stat' | 'modern'`
     );
   }
   const style = seg.style as CaptionSegment['style'];
@@ -349,7 +403,16 @@ export function validateCaptionSegment(
     words = seg.words.map((w, idx) =>
       validateWordTiming(w, `${ctx}.words[${idx}]`, durationFrames)
     );
+    words.forEach((word, index) => {
+      if (word.startFrame < startFrame || word.endFrame > endFrame) {
+        throw new Error(`${ctx}.words[${index}] must remain inside its caption segment`);
+      }
+      if (index > 0 && word.startFrame < words![index - 1].endFrame) {
+        throw new Error(`${ctx}.words must be ordered and must not overlap`);
+      }
+    });
   }
+  if (style === 'modern' && !seg.text.trim() && !words?.length) throw new Error(`${ctx} requires text or timed words`);
 
   let animation: AnimationSettings | undefined;
   if (seg.animation !== undefined) {
@@ -467,15 +530,15 @@ export function validateVisualSegment(
     durationFrames
   );
 
-  let transition: 'cut' | 'fade' | 'slide' | undefined;
+  let transition: TransitionName | undefined;
   if (seg.transition !== undefined) {
     if (
       typeof seg.transition !== 'string' ||
-      !VALID_TRANSITIONS.has(seg.transition as 'cut' | 'fade' | 'slide')
+      !VALID_TRANSITIONS.has(seg.transition as TransitionName)
     ) {
-      throw new Error(`${ctx}.transition must be 'cut' | 'fade' | 'slide'`);
+      throw new Error(`${ctx}.transition is not supported`);
     }
-    transition = seg.transition as 'cut' | 'fade' | 'slide';
+    transition = seg.transition as TransitionName;
   }
 
   let kenBurns: KenBurnsConfig | undefined;
@@ -494,12 +557,14 @@ export function validateVisualSegment(
       x: assertFiniteNumber(seg.focalPoint.x, `${ctx}.focalPoint.x`),
       y: assertFiniteNumber(seg.focalPoint.y, `${ctx}.focalPoint.y`),
     };
+    if (focalPoint.x < 0 || focalPoint.x > 1 || focalPoint.y < 0 || focalPoint.y > 1) throw new Error(`${ctx}.focalPoint must be normalized to 0..1`);
   }
 
   return {
     id,
     src,
     type: seg.type,
+    ...(seg.sourceStartFrame !== undefined ? { sourceStartFrame: assertNonNegativeInteger(seg.sourceStartFrame, `${ctx}.sourceStartFrame`) } : {}),
     startFrame,
     endFrame,
     ...(transition !== undefined ? { transition } : {}),
@@ -522,19 +587,26 @@ export function validateGraphicSegment(
 
   if (
     typeof seg.type !== 'string' ||
-    !VALID_GRAPHIC_TYPES.has(seg.type as GraphicSegment['type'])
+    !VALID_GRAPHIC_TYPES.has(seg.type as GraphicType)
   ) {
-    throw new Error(`${ctx}.type must be 'icon' | 'badge' | 'stat-card'`);
+    throw new Error(
+      `${ctx}.type must be one of: ${[...VALID_GRAPHIC_TYPES].join(', ')}`
+    );
   }
 
+  if (seg.steps !== undefined && (!Array.isArray(seg.steps) || seg.steps.length < 2 || seg.steps.length > 5 || seg.steps.some(step => typeof step !== 'string' || !step.trim()))) throw new Error(`${ctx}.steps must contain 2 to 5 nonempty labels`);
   const label = assertNonEmptyString(seg.label, `${ctx}.label`);
   const value = assertOptionalString(seg.value, `${ctx}.value`);
   const iconName = assertIconName(seg.iconName, `${ctx}.iconName`);
 
-  if (seg.region !== 'captions') {
+  if (seg.region !== 'captions' && seg.region !== 'visuals') {
     throw new Error(
-      `${ctx}.region must be 'captions' (got "${String(seg.region)}" — graphics cannot be placed outside the captions region)`
+      `${ctx}.region must be 'captions' | 'visuals' (got "${String(seg.region)}")`
     );
+  }
+  const region = seg.region as GraphicSegment['region'];
+  if (region === 'captions' && !['badge', 'icon', 'stat', 'stat-card'].includes(String(seg.type))) {
+    throw new Error(`${ctx}: captions graphics support badge, icon, stat, or stat-card; place larger graphics in visuals`);
   }
 
   const { startFrame, endFrame } = assertFrameRange(
@@ -544,15 +616,156 @@ export function validateGraphicSegment(
     durationFrames
   );
 
+  let person: PersonPictorialConfig | undefined;
+  if (isPlainObject(seg.person)) {
+    person = {
+      src: assertOptionalString(seg.person.src, `${ctx}.person.src`),
+      name: assertOptionalString(seg.person.name, `${ctx}.person.name`),
+      title: assertOptionalString(seg.person.title, `${ctx}.person.title`),
+      avatarType: seg.person.avatarType as PersonPictorialConfig['avatarType'],
+      accent: assertOptionalString(seg.person.accent, `${ctx}.person.accent`),
+    };
+  }
+  if (person?.avatarType && !['jensen', 'founder', 'analyst', 'custom'].includes(person.avatarType)) {
+    throw new Error(`${ctx}.person.avatarType is not supported`);
+  }
+  if (seg.type === 'person-pictorial' && !person?.src?.trim()) throw new Error(`${ctx}: provide an attributed portrait src; person mentions cannot use a placeholder card`);
+
+  let logo: LogoSpotlightConfig | undefined;
+  if (isPlainObject(seg.logo)) {
+    const brand = assertNonEmptyString(seg.logo.brand, `${ctx}.logo.brand`) as LogoSpotlightConfig['brand'];
+    if (!['nvidia', 'openai', 'gemini', 'claude', 'custom'].includes(brand)) throw new Error(`${ctx}.logo.brand is not supported`);
+    logo = {
+      src: assertOptionalString(seg.logo.src, `${ctx}.logo.src`),
+      brand,
+      label: assertOptionalString(seg.logo.label, `${ctx}.logo.label`),
+      glowColor: assertOptionalString(seg.logo.glowColor, `${ctx}.logo.glowColor`),
+    };
+  }
+
   return {
     id,
-    type: seg.type as GraphicSegment['type'],
+    type: seg.type as GraphicType,
+    ...(Array.isArray(seg.steps) ? { steps: [...seg.steps] as string[] } : {}),
     label,
     ...(value !== undefined ? { value } : {}),
     ...(iconName !== undefined ? { iconName } : {}),
+    ...(person !== undefined ? { person } : {}),
+    ...(logo !== undefined ? { logo } : {}),
     startFrame,
     endFrame,
-    region: 'captions',
+    region,
+  };
+}
+
+export function validateCameraMove(
+  move: unknown,
+  durationFrames?: number
+): CameraMove {
+  if (!isPlainObject(move)) {
+    throw new Error('CameraMove must be an object');
+  }
+
+  const id = assertNonEmptyString(move.id, 'CameraMove.id');
+  const ctx = `CameraMove "${id}"`;
+
+  if (
+    typeof move.type !== 'string' ||
+    !VALID_CAMERA_MOVE_TYPES.has(move.type as CameraMoveType)
+  ) {
+    throw new Error(
+      `${ctx}.type must be one of: hold, slow-zoom-in, slow-zoom-out, sudden-zoom, pan, whip-pan, micro-shake`
+    );
+  }
+
+  const { startFrame, endFrame } = assertFrameRange(
+    move.startFrame,
+    move.endFrame,
+    ctx,
+    durationFrames
+  );
+  for (const key of ['fromScale', 'toScale', 'fromX', 'toX', 'fromY', 'toY', 'intensity'] as const) {
+    if (move[key] !== undefined) {
+      if (key.includes('Scale')) assertPositiveNumber(move[key], `${ctx}.${key}`);
+      else assertFiniteNumber(move[key], `${ctx}.${key}`);
+    }
+  }
+
+  return {
+    id,
+    type: move.type as CameraMoveType,
+    startFrame,
+    endFrame,
+    ...(move.fromScale !== undefined ? { fromScale: Number(move.fromScale) } : {}),
+    ...(move.toScale !== undefined ? { toScale: Number(move.toScale) } : {}),
+    ...(move.fromX !== undefined ? { fromX: Number(move.fromX) } : {}),
+    ...(move.toX !== undefined ? { toX: Number(move.toX) } : {}),
+    ...(move.fromY !== undefined ? { fromY: Number(move.fromY) } : {}),
+    ...(move.toY !== undefined ? { toY: Number(move.toY) } : {}),
+    ...(move.intensity !== undefined ? { intensity: Number(move.intensity) } : {}),
+  };
+}
+
+export function validateInterstitialSegment(
+  seg: unknown,
+  durationFrames?: number,
+  fps = 30
+): InterstitialSegment {
+  if (!isPlainObject(seg)) {
+    throw new Error('InterstitialSegment must be an object');
+  }
+
+  const id = assertNonEmptyString(seg.id, 'InterstitialSegment.id');
+  const ctx = `InterstitialSegment "${id}"`;
+
+  const src = assertNonEmptyString(seg.src, `${ctx}.src`);
+  assertSupportedExtension(src, SUPPORTED_VIDEO_EXTENSIONS, `${ctx}.src`);
+
+  const { startFrame, endFrame } = assertFrameRange(
+    seg.startFrame,
+    seg.endFrame,
+    ctx,
+    durationFrames
+  );
+
+  const durationSec = (endFrame - startFrame) / fps;
+  if (durationSec > 10.01) {
+    throw new Error(
+      `${ctx} duration (${durationSec.toFixed(1)}s) exceeds max 10.0s for AI interstitial clips`
+    );
+  }
+
+  const label = assertOptionalString(seg.label, `${ctx}.label`);
+  const transitionIn = seg.transitionIn !== undefined ? String(seg.transitionIn) : undefined;
+  if (
+    transitionIn !== undefined &&
+    !VALID_INTERSTITIAL_TRANSITIONS.has(transitionIn as any)
+  ) {
+    throw new Error(`${ctx}.transitionIn "${transitionIn}" is not supported`);
+  }
+
+  const transitionOut = seg.transitionOut !== undefined ? String(seg.transitionOut) : undefined;
+  if (
+    transitionOut !== undefined &&
+    !VALID_INTERSTITIAL_TRANSITIONS.has(transitionOut as any)
+  ) {
+    throw new Error(`${ctx}.transitionOut "${transitionOut}" is not supported`);
+  }
+
+  const cameraMove = seg.cameraMove !== undefined ? String(seg.cameraMove) : undefined;
+  if (cameraMove && !['zoom-in', 'pan-left', 'pan-right', 'subtle-drift'].includes(cameraMove)) throw new Error(`${ctx}.cameraMove is not supported`);
+
+  return {
+    id,
+    src,
+    startFrame,
+    endFrame,
+    ...(seg.sourceStartFrame !== undefined ? { sourceStartFrame: assertNonNegativeInteger(seg.sourceStartFrame, `${ctx}.sourceStartFrame`) } : {}),
+    ...(seg.volume !== undefined ? { volume: assertNonNegativeNumber(seg.volume, `${ctx}.volume`) } : {}),
+    ...(label !== undefined ? { label } : {}),
+    ...(transitionIn !== undefined ? { transitionIn: transitionIn as any } : {}),
+    ...(transitionOut !== undefined ? { transitionOut: transitionOut as any } : {}),
+    ...(cameraMove !== undefined ? { cameraMove: cameraMove as any } : {}),
   };
 }
 
@@ -580,7 +793,7 @@ function validateAudioTrack(
     result.volume = assertNonNegativeNumber(track.volume, `${field}.volume`);
   }
   if (track.startFrame !== undefined) {
-    result.startFrame = assertNonNegativeNumber(
+    result.startFrame = assertNonNegativeInteger(
       track.startFrame,
       `${field}.startFrame`
     );
@@ -607,16 +820,19 @@ function validateAudioTrack(
     }
   }
   if (track.fadeInFrames !== undefined) {
-    result.fadeInFrames = assertNonNegativeNumber(
+    result.fadeInFrames = assertNonNegativeInteger(
       track.fadeInFrames,
       `${field}.fadeInFrames`
     );
   }
   if (track.fadeOutFrames !== undefined) {
-    result.fadeOutFrames = assertNonNegativeNumber(
+    result.fadeOutFrames = assertNonNegativeInteger(
       track.fadeOutFrames,
       `${field}.fadeOutFrames`
     );
+  }
+  for (const key of ['duckingAmount', 'sfxDuckAmount', 'bgMusicVolume', 'narrationVolume'] as const) {
+    if (track[key] !== undefined) result[key] = assertNonNegativeNumber(track[key], `${field}.${key}`);
   }
 
   return result;
@@ -635,7 +851,7 @@ function validateSfxSegment(
   const src = assertNonEmptyString(sfx.src, `${ctx}.src`);
   assertSupportedExtension(src, SUPPORTED_AUDIO_EXTENSIONS, `${ctx}.src`);
 
-  const startFrame = assertNonNegativeNumber(
+  const startFrame = assertNonNegativeInteger(
     sfx.startFrame,
     `${ctx}.startFrame`
   );
@@ -661,6 +877,7 @@ function validateMediaDictionary(
   }
 
   const result: MediaDictionary = {};
+  if (media.facecamVolume !== undefined) result.facecamVolume = assertNonNegativeNumber(media.facecamVolume, 'media.facecamVolume');
 
   if (media.facecam !== undefined) {
     const facecam = assertNonEmptyString(media.facecam, 'media.facecam');
@@ -718,6 +935,7 @@ function validateCompositionSettings(comp: unknown): CompositionSettings {
     comp.durationFrames,
     'composition.durationFrames'
   );
+  if (![width, height, durationFrames].every(Number.isInteger)) throw new Error('composition dimensions and durationFrames must be integers');
 
   const result: CompositionSettings = {
     width,
@@ -725,6 +943,10 @@ function validateCompositionSettings(comp: unknown): CompositionSettings {
     fps,
     durationFrames,
   };
+  if (comp.overlayEndFrame !== undefined) {
+    result.overlayEndFrame = assertNonNegativeInteger(comp.overlayEndFrame, 'composition.overlayEndFrame');
+    if (result.overlayEndFrame > durationFrames) throw new Error('overlayEndFrame exceeds composition duration');
+  }
 
   if (comp.blurStrength !== undefined) {
     result.blurStrength = assertNonNegativeNumber(
@@ -756,6 +978,7 @@ function validateCompositionSettings(comp: unknown): CompositionSettings {
       'composition.safeMarginY'
     );
   }
+  if ((result.safeMarginX ?? 0) * 2 >= width || (result.safeMarginY ?? 0) >= height * .3) throw new Error('Composition safe margins leave no room for captions');
 
   return result;
 }
@@ -798,8 +1021,16 @@ function validatePartialTheme(theme: unknown): Partial<ThemeSettings> {
     throw new Error('project.theme must be an object');
   }
   const result: Partial<ThemeSettings> = {};
+  if (theme.captionTreatment !== undefined) {
+    if (theme.captionTreatment !== 'expressive' && theme.captionTreatment !== 'clean') throw new Error('theme.captionTreatment must be expressive or clean');
+    result.captionTreatment=theme.captionTreatment;
+  }
   const stringFields = [
     'primaryText',
+    'pillTextColor',
+    'name',
+    'mood',
+    'description',
     'highlightColor',
     'accentColor',
     'warningColor',
@@ -824,6 +1055,11 @@ function validatePartialTheme(theme: unknown): Partial<ThemeSettings> {
       theme.borderRadius,
       'theme.borderRadius'
     );
+  }
+  if (theme.captionFontSize !== undefined) result.captionFontSize = assertPositiveNumber(theme.captionFontSize, 'theme.captionFontSize');
+  if (theme.captionMaxWords !== undefined) {
+    result.captionMaxWords = assertPositiveNumber(theme.captionMaxWords, 'theme.captionMaxWords');
+    if (!Number.isInteger(result.captionMaxWords) || result.captionMaxWords > 5) throw new Error('theme.captionMaxWords must be an integer from 1 to 5');
   }
   return result;
 }
@@ -874,7 +1110,84 @@ export function validateProject(project: unknown): VideoProject {
     validateGraphicSegment(g, durationFrames)
   );
   assertUniqueIds(graphics, 'GraphicSegment');
+  for (const region of ['visuals', 'captions']) assertNoOverlaps(graphics.filter(g => g.region === region), `${region} graphics`);
 
+  let interstitials: InterstitialSegment[] | undefined;
+  if (project.interstitials !== undefined) {
+    if (!Array.isArray(project.interstitials)) {
+      throw new Error('project.interstitials must be an array');
+    }
+    interstitials = project.interstitials.map((seg) =>
+      validateInterstitialSegment(seg, durationFrames, composition.fps)
+    );
+    assertUniqueIds(interstitials, 'InterstitialSegment');
+    assertNoOverlaps(interstitials, 'interstitials');
+  }
+
+  let cameraMoves: CameraMove[] | undefined;
+  if (project.cameraMoves !== undefined) {
+    if (!Array.isArray(project.cameraMoves)) {
+      throw new Error('project.cameraMoves must be an array');
+    }
+    cameraMoves = project.cameraMoves.map((m) =>
+      validateCameraMove(m, durationFrames)
+    );
+    assertUniqueIds(cameraMoves, 'CameraMove');
+    assertNoOverlaps(cameraMoves, 'cameraMoves');
+  }
+
+  let audio: AudioTrackConfig | undefined;
+  if (project.audio !== undefined) {
+    if (!isPlainObject(project.audio)) throw new Error('project.audio must be an object');
+    audio = {};
+    for (const key of ['volume', 'duckingAmount', 'sfxDuckAmount', 'bgMusicVolume', 'narrationVolume'] as const) {
+      if (project.audio[key] !== undefined) audio[key] = assertNonNegativeNumber(project.audio[key], `audio.${key}`);
+    }
+  }
+  let entities:EntityAsset[]|undefined;
+  if(project.entities!==undefined){
+    if(!Array.isArray(project.entities))throw new Error('project.entities must be an array');
+    entities=project.entities.map((item,index)=>{
+      if(!isPlainObject(item))throw new Error(`entities[${index}] must be an object`);
+      const id=assertNonEmptyString(item.id,`entities[${index}].id`);
+      const name=assertNonEmptyString(item.name,`entities[${index}].name`);
+      if(item.kind!=='person'&&item.kind!=='brand')throw new Error(`Entity ${id} kind must be person or brand`);
+      if(item.brand!==undefined&&!['nvidia','openai','gemini','claude','custom'].includes(String(item.brand)))throw new Error(`Entity ${id} has unsupported brand`);
+      if(!Array.isArray(item.aliases)||!item.aliases.length)throw new Error(`Entity ${id} requires name aliases`);
+      const aliases=item.aliases.map((alias,i)=>assertNonEmptyString(alias,`Entity ${id} alias ${i}`));
+      return {id,name,kind:item.kind,aliases,src:assertOptionalString(item.src,`Entity ${id}.src`),accent:assertOptionalString(item.accent,`Entity ${id}.accent`),sourceUrl:assertOptionalString(item.sourceUrl,`Entity ${id}.sourceUrl`),brand:item.brand as EntityAsset['brand']};
+    });
+    assertUniqueIds(entities,'EntityAsset');
+  }
+  let editBeats:EditBeat[]|undefined;
+  if(project.editBeats!==undefined){
+    if(!Array.isArray(project.editBeats))throw new Error('project.editBeats must be an array');
+    editBeats=project.editBeats.map((item,index)=>{
+      if(!isPlainObject(item))throw new Error(`editBeats[${index}] must be an object`);
+      const id=assertNonEmptyString(item.id,`editBeats[${index}].id`);
+      const frame=assertNonNegativeInteger(item.frame,`EditBeat ${id}.frame`);
+      if(frame>=(composition.overlayEndFrame??durationFrames))throw new Error(`EditBeat ${id} must precede the overlay end`);
+      const reason=assertNonEmptyString(item.reason,`EditBeat ${id}.reason`);
+      if(item.camera!==undefined&&!['punch','pan','whip'].includes(String(item.camera)))throw new Error(`EditBeat ${id} has unsupported camera`);
+      if(item.transition!==undefined&&!['whip-pan','zoom-through','diagonal-wipe'].includes(String(item.transition)))throw new Error(`EditBeat ${id} has unsupported transition`);
+      if(item.sound!==undefined&&!['impact','whoosh'].includes(String(item.sound)))throw new Error(`EditBeat ${id} has unsupported sound`);
+      return {id,frame,reason,camera:item.camera as EditBeat['camera'],transition:item.transition as EditBeat['transition'],sound:item.sound as EditBeat['sound']};
+    });
+    assertUniqueIds(editBeats,'EditBeat');
+  }
+  let transitions:SceneTransition[]|undefined;
+  if(project.transitions!==undefined){
+    if(!Array.isArray(project.transitions))throw new Error('project.transitions must be an array');
+    transitions=project.transitions.map((item,index)=>{
+      if(!isPlainObject(item))throw new Error(`transitions[${index}] must be an object`);
+      const id=assertNonEmptyString(item.id,`transitions[${index}].id`);
+      if(!['whip-pan','zoom-through','diagonal-wipe'].includes(String(item.type)))throw new Error(`Transition ${id} has unsupported type`);
+      const range=assertFrameRange(item.startFrame,item.endFrame,`Transition ${id}`,durationFrames);
+      if(range.endFrame-range.startFrame>composition.fps*.5)throw new Error(`Transition ${id} must be brief (max 0.5 seconds)`);
+      return {id,type:item.type as SceneTransition['type'],...range,color:assertOptionalString(item.color,`Transition ${id}.color`)};
+    });
+    assertUniqueIds(transitions,'SceneTransition');assertNoOverlaps(transitions,'scene transitions');
+  }
   return {
     version: 1,
     composition,
@@ -883,5 +1196,11 @@ export function validateProject(project: unknown): VideoProject {
     captions,
     visuals,
     graphics,
+    ...(editBeats ? {editBeats} : {}),
+    ...(entities ? {entities} : {}),
+    ...(transitions ? {transitions} : {}),
+    ...(interstitials !== undefined ? { interstitials } : {}),
+    ...(cameraMoves !== undefined ? { cameraMoves } : {}),
+    ...(audio ? { audio } : {}),
   };
 }

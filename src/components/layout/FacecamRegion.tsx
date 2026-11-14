@@ -1,5 +1,6 @@
+import { mediaSource } from '../../utils/media';
 import React from 'react';
-import { OffthreadVideo, staticFile } from 'remotion';
+import { OffthreadVideo } from 'remotion';
 import { LAYOUT } from '../../config/theme';
 
 export interface FacecamRegionProps {
@@ -24,7 +25,7 @@ export const FacecamRegion: React.FC<FacecamRegionProps> = ({ src }) => {
     return (
       <div style={containerStyle}>
         <OffthreadVideo
-          src={staticFile(src)}
+          src={mediaSource(src)}
           style={{
             width: '100%',
             height: '100%',

@@ -1,0 +1,4 @@
+# Keep conversation checksums stable across Windows and Linux checkouts.
+docs/conversations/*.md text eol=lf
+docs/conversations/*.jsonl text eol=lf
+docs/conversations/*.json text eol=lf

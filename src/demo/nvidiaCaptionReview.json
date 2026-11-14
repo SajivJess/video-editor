@@ -1,0 +1,399 @@
+{
+  "model": "Whisper large-v3 CPU int8, no VAD, enhanced audio",
+  "reviewNote": "ASR draft, not a supplied or verified script. Names and spelling normalized. Rhetorical question at 47.5–49.8s recovered from the independent Whisper small pass. Proofread uncertain phrases before publishing. The market-report phrase at 43.9–45.4s also needs checking.",
+  "uncertainWords": [
+    {
+      "word": "AI",
+      "original": "AI",
+      "start": 3.7,
+      "end": 3.9,
+      "probability": 0.3774
+    },
+    {
+      "word": "chipsla",
+      "original": "chipsல",
+      "start": 3.9,
+      "end": 4.32,
+      "probability": 0.3906
+    },
+    {
+      "word": "top",
+      "original": "top",
+      "start": 4.32,
+      "end": 4.48,
+      "probability": 0.3744
+    },
+    {
+      "word": "oda",
+      "original": "உடை",
+      "start": 5.54,
+      "end": 6.02,
+      "probability": 0.4643
+    },
+    {
+      "word": "Almost",
+      "original": "Almost",
+      "start": 12.26,
+      "end": 12.66,
+      "probability": 0.322
+    },
+    {
+      "word": "chips",
+      "original": "chips",
+      "start": 19.82,
+      "end": 19.96,
+      "probability": 0.178
+    },
+    {
+      "word": "role",
+      "original": "road",
+      "start": 21.32,
+      "end": 21.5,
+      "probability": 0.086
+    },
+    {
+      "word": "athu",
+      "original": "அது",
+      "start": 30.04,
+      "end": 30.18,
+      "probability": 0.088
+    },
+    {
+      "word": "former",
+      "original": "formula",
+      "start": 30.28,
+      "end": 30.66,
+      "probability": 0.235
+    },
+    {
+      "word": "verify",
+      "original": "verify",
+      "start": 33.06,
+      "end": 33.24,
+      "probability": 0.1996
+    },
+    {
+      "word": "So,",
+      "original": "So,",
+      "start": 33.88,
+      "end": 34.32,
+      "probability": 0.1662
+    },
+    {
+      "word": "news",
+      "original": "news",
+      "start": 39.84,
+      "end": 40.14,
+      "probability": 0.3137
+    },
+    {
+      "word": "oda",
+      "original": "உடை",
+      "start": 40.9,
+      "end": 41.28,
+      "probability": 0.3571
+    },
+    {
+      "word": "shares",
+      "original": "shares",
+      "start": 41.28,
+      "end": 41.4,
+      "probability": 0.2427
+    },
+    {
+      "word": "fall",
+      "original": "follow",
+      "start": 43.9,
+      "end": 44.16,
+      "probability": 0.3702
+    },
+    {
+      "word": "aantam",
+      "original": "ஆண்டம்",
+      "start": 44.16,
+      "end": 44.56,
+      "probability": 0.4092
+    },
+    {
+      "word": "lose",
+      "original": "looze",
+      "start": 47.66,
+      "end": 48.04,
+      "probability": 0.4523
+    },
+    {
+      "word": "enna",
+      "original": "enna,",
+      "start": 49.54,
+      "end": 49.82,
+      "probability": 0.357
+    },
+    {
+      "word": "AI",
+      "original": "AA",
+      "start": 53.88,
+      "end": 54.04,
+      "probability": 0.148
+    },
+    {
+      "word": "aa",
+      "original": "ஆ",
+      "start": 55.6,
+      "end": 55.76,
+      "probability": 0.454
+    },
+    {
+      "word": "comment",
+      "original": "comment",
+      "start": 58.02,
+      "end": 58.16,
+      "probability": 0.4251
+    }
+  ],
+  "corrections": [
+    {
+      "start": 0.92,
+      "raw": "aavathum",
+      "caption": "Aavadhum",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 1.68,
+      "raw": "ponnaalae",
+      "caption": "ponnaale,",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 2.1,
+      "raw": "alivathum",
+      "caption": "azhivadhum",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 2.62,
+      "raw": "ponnaalae",
+      "caption": "ponnaale,",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 3.0,
+      "raw": "ulakaththil",
+      "caption": "ulagathula",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 5.32,
+      "raw": "Nvidia",
+      "caption": "NVIDIA",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 5.54,
+      "raw": "utai",
+      "caption": "oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 7.32,
+      "raw": "poaraangka",
+      "caption": "poraanga.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 8.64,
+      "raw": "jensan",
+      "caption": "Jensen",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 9.16,
+      "raw": "huvaangka",
+      "caption": "Huang.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 10.9,
+      "raw": "Nvidiavai",
+      "caption": "NVIDIA-vai",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 13.34,
+      "raw": "SR",
+      "caption": "years-aa",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 16.96,
+      "raw": "Cloud",
+      "caption": "Claude,",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 18.8,
+      "raw": "envitiyaavutaiya",
+      "caption": "NVIDIA-oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 21.32,
+      "raw": "road",
+      "caption": "role",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 23.92,
+      "raw": "envitiyaala,",
+      "caption": "NVIDIA-la,",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 25.42,
+      "raw": "varukku",
+      "caption": "work",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 26.96,
+      "raw": "ithuvutan",
+      "caption": "oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 27.46,
+      "raw": "jensan",
+      "caption": "Jensen",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 28.12,
+      "raw": "hoangku",
+      "caption": "Huang",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 30.28,
+      "raw": "formula",
+      "caption": "former",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 30.66,
+      "raw": "employee",
+      "caption": "employees",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 30.98,
+      "raw": "solliyirukkaana.",
+      "caption": "solliyirukkaanga.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 32.82,
+      "raw": "innu",
+      "caption": "innum",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 33.24,
+      "raw": "aakiyaathu.",
+      "caption": "aagala.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 36.82,
+      "raw": "varukkirathu.",
+      "caption": "varudhu.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 38.38,
+      "raw": "innu",
+      "caption": "innum",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 38.72,
+      "raw": "aakiyaathu.",
+      "caption": "aagala.",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 40.64,
+      "raw": "Nvidia",
+      "caption": "NVIDIA",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 40.9,
+      "raw": "utai",
+      "caption": "oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 45.38,
+      "raw": "ippum",
+      "caption": "Ippo",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 48.82,
+      "raw": "utai",
+      "caption": "oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 50.32,
+      "raw": "Nvidia",
+      "caption": "NVIDIA",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 50.56,
+      "raw": "veekkaanaa",
+      "caption": "weak-aana",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 53.88,
+      "raw": "AA",
+      "caption": "AI",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 54.68,
+      "raw": "utai",
+      "caption": "oda",
+      "reason": "Name, spelling, or natural Tanglish normalization; review against speech"
+    },
+    {
+      "start": 42.66,
+      "raw": "8 %",
+      "caption": "8%",
+      "reason": "Combine number/suffix; King is a repeated ASR homophone for Tamil kku"
+    },
+    {
+      "start": 43.9,
+      "raw": "follow",
+      "caption": "fall",
+      "reason": "English homophone in market-report context; not script verified"
+    },
+    {
+      "start": 51.34,
+      "raw": "AMD King",
+      "caption": "AMD-kku",
+      "reason": "Combine number/suffix; King is a repeated ASR homophone for Tamil kku"
+    },
+    {
+      "raw": "aantam",
+      "caption": "aana-dhaa",
+      "reason": "Contextual ASR phrase repair in the spoken market-report sentence; not script verified. Check 43.9–45.4s."
+    },
+    {
+      "raw": "thotarputtum",
+      "caption": "report irukku",
+      "reason": "Contextual ASR phrase repair in the spoken market-report sentence; not script verified. Check 43.9–45.4s."
+    }
+  ]
+}

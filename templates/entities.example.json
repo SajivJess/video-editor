@@ -1,0 +1,26 @@
+[
+  {
+    "id": "person-one",
+    "name": "Person Full Name",
+    "aliases": [
+      "Person Full Name",
+      "Alternative Spelling"
+    ],
+    "kind": "person",
+    "src": "images/person-cutout.png",
+    "sourceUrl": "https://example.com/official-portrait"
+  },
+  {
+    "id": "brand-one",
+    "name": "Company Name",
+    "aliases": [
+      "Company Name",
+      "Company"
+    ],
+    "kind": "brand",
+    "brand": "custom",
+    "src": "logos/company.svg",
+    "accent": "#C8102E",
+    "sourceUrl": "https://example.com/brand-assets"
+  }
+]

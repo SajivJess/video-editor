@@ -44,7 +44,7 @@ export const CAPTION_PRESETS: Record<CaptionPreset, CaptionPresetConfig> = {
     fontSize: 36,
     fontWeight: 900,
     textTransform: 'none',
-    backgroundColor: THEME.bgPanel,
+    backgroundColor: THEME.bgPanel ?? 'rgba(0,0,0,0.6)',
     borderRadius: 20,
     padding: '16px 28px',
     backdropBlurPx: 8,
@@ -101,18 +101,27 @@ export const CAPTION_PRESETS: Record<CaptionPreset, CaptionPresetConfig> = {
   },
 };
 
+/**
+ * Modern 3-zone 9:16 layout (1080 x 1920):
+ * - topVisuals (0%–40%, 0–768px): Transparent overlay for 2D vector animations, logo reveals, and person pictorials.
+ * - clearMiddle (40%–70%, 768–1344px): Completely clear zone for presenter's face/expressions.
+ * - captions (70%–100%, 1344–1920px): Bottom 30% for modernised captions with Instagram safe padding, NO blur.
+ * - background/facecam (0%–100%, 0–1920px): Full-frame base video with camera moves.
+ */
 export const LAYOUT: RegionLayout = {
+  topVisuals: { y: 0, h: 0.4 },
+  clearMiddle: { y: 0.4, h: 0.3 },
+  captions: { y: 0.7, h: 0.3 },
+  // Backward compatibility aliases
   visuals: { y: 0, h: 0.4 },
-  facecam: { y: 0.4, h: 0.6 },
-  facecamClear: { y: 0.4, h: 0.2 },
-  captions: { y: 0.6, h: 0.4 },
+  facecam: { y: 0, h: 1.0 },
+  facecamClear: { y: 0.4, h: 0.3 },
 };
 
 export const COMPOSITION_DEFAULTS = {
   width: 1080,
   height: 1920,
   fps: 30,
-  blurStrength: 15,
   tintOpacity: 0.25,
   safeMarginX: 40,
   safeMarginY: 48,

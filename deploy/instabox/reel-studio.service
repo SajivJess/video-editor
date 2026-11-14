@@ -1,0 +1,41 @@
+[Unit]
+Description=Sajiv standalone reel studio
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=reelstudio
+Group=reelstudio
+WorkingDirectory=/data/reel-studio/current
+EnvironmentFile=/data/reel-studio/config/studio.env
+Environment=NODE_ENV=production
+Environment=HOST=0.0.0.0
+Environment=PORT=4317
+Environment=REQUIRE_AUTH=true
+Environment=STUDIO_SECURE_COOKIE=true
+Environment=REEL_PYTHON=/data/reel-studio/venv/bin/python
+Environment=WHISPER_MODEL=/data/reel-studio/models/large-v3-local
+Environment=WHISPER_THREADS=4
+Environment=RENDER_CONCURRENCY=1
+Environment=REMOTION_BROWSER_EXECUTABLE=/usr/bin/chromium
+Environment=DISK_RESERVE_MB=2048
+Environment=PATH=/data/reel-studio/toolchain/node-v24.16.0-linux-x64/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/data/reel-studio/toolchain/node-v24.16.0-linux-x64/bin/node server/index.js
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillMode=control-group
+MemoryHigh=6500M
+MemoryMax=7500M
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/data/reel-studio/state /data/reel-studio/home /data/reel-studio/models /data/reel-studio/releases
+
+[Install]
+WantedBy=multi-user.target

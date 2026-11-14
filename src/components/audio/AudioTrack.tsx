@@ -1,8 +1,10 @@
+import { mediaSource } from '../../utils/media';
 import React from 'react';
-import { Audio, Sequence, interpolate, staticFile } from 'remotion';
+import { Audio, Sequence, interpolate } from 'remotion';
 import { AudioTrackConfig, MediaDictionary } from '../../types/project';
 
 export interface AudioTrackProps {
+  settings?: AudioTrackConfig;
   media: MediaDictionary;
   durationFrames: number;
 }
@@ -13,17 +15,18 @@ const CLAMP = {
 } as const;
 
 const DEFAULT_BG_MUSIC_VOLUME = 0.4;
-const DUCKED_BG_MUSIC_VOLUME = 0.15;
 const DEFAULT_BG_FADE_FRAMES = 15;
 const DUCK_RAMP_FRAMES = 6;
 
+export type NormalizedAudioTrack = AudioTrackConfig & { src: string };
+
 /**
- * Normalizes a file path string or AudioTrackConfig into an AudioTrackConfig,
+ * Normalizes a file path string or AudioTrackConfig into an AudioTrackConfig with guaranteed src,
  * returning null when empty or undefined.
  */
 export function normalizeAudioTrack(
   input?: AudioTrackConfig | string
-): AudioTrackConfig | null {
+): NormalizedAudioTrack | null {
   if (!input) {
     return null;
   }
@@ -75,6 +78,7 @@ function clampVolume(value: number): number {
 export const AudioTrack: React.FC<AudioTrackProps> = ({
   media,
   durationFrames,
+  settings,
 }) => {
   if (durationFrames <= 0) {
     return null;
@@ -88,7 +92,10 @@ export const AudioTrack: React.FC<AudioTrackProps> = ({
     ? Math.min(durationFrames, narration.endFrame ?? durationFrames)
     : 0;
   const narDuration = narEnd - narStart;
-  const hasActiveNarration = narration !== null && narDuration > 0;
+  const hasSeparateNarration = narration !== null && narDuration > 0;
+  const hasActiveNarration = hasSeparateNarration || Boolean(media.facecam && (media.facecamVolume ?? 1) > 0);
+  const speechStart = hasSeparateNarration ? narStart : 0;
+  const speechEnd = hasSeparateNarration ? narEnd : durationFrames;
 
   const bgStart = bgMusic ? Math.max(0, bgMusic.startFrame ?? 0) : 0;
   const bgEnd = bgMusic
@@ -98,23 +105,23 @@ export const AudioTrack: React.FC<AudioTrackProps> = ({
 
   return (
     <>
-      {hasActiveNarration && (
+      {hasSeparateNarration && narration && (
         <Sequence
           from={narStart}
           durationInFrames={narDuration}
           layout="none"
         >
           <Audio
-            src={staticFile(narration.src)}
+            src={mediaSource(narration.src)}
             volume={(localFrame) => {
-              const baseVolume = clampVolume(narration.volume ?? 1);
+              const baseVolume = clampVolume(narration.volume ?? settings?.narrationVolume ?? 1);
               const fadeMultiplier = computeFadeMultiplier(
                 localFrame,
                 narDuration,
                 narration.fadeInFrames ?? 0,
                 narration.fadeOutFrames ?? 0
               );
-              return clampVolume(baseVolume * fadeMultiplier);
+              return clampVolume(baseVolume * fadeMultiplier * (settings?.volume ?? 1));
             }}
           />
         </Sequence>
@@ -123,41 +130,45 @@ export const AudioTrack: React.FC<AudioTrackProps> = ({
       {bgMusic && bgDuration > 0 && (
         <Sequence from={bgStart} durationInFrames={bgDuration} layout="none">
           <Audio
-            src={staticFile(bgMusic.src)}
+            src={mediaSource(bgMusic.src)}
             volume={(localFrame) => {
               const normalVolume = clampVolume(
-                bgMusic.volume ?? DEFAULT_BG_MUSIC_VOLUME
+                bgMusic.volume ?? settings?.bgMusicVolume ?? DEFAULT_BG_MUSIC_VOLUME
               );
-              const duckedVolume = Math.min(normalVolume, DUCKED_BG_MUSIC_VOLUME);
+              const duckedVolume = normalVolume * (1 - Math.min(1, bgMusic.duckingAmount ?? settings?.duckingAmount ?? .8));
               const globalFrame = bgStart + localFrame;
 
               let duckedTarget = normalVolume;
               if (hasActiveNarration) {
-                if (globalFrame >= narStart && globalFrame < narEnd) {
+                if (globalFrame >= speechStart && globalFrame < speechEnd) {
                   duckedTarget = duckedVolume;
                 } else if (
-                  globalFrame >= narStart - DUCK_RAMP_FRAMES &&
-                  globalFrame < narStart
+                  globalFrame >= speechStart - DUCK_RAMP_FRAMES &&
+                  globalFrame < speechStart
                 ) {
                   duckedTarget = interpolate(
                     globalFrame,
-                    [narStart - DUCK_RAMP_FRAMES, narStart],
+                    [speechStart - DUCK_RAMP_FRAMES, speechStart],
                     [normalVolume, duckedVolume],
                     CLAMP
                   );
                 } else if (
-                  globalFrame >= narEnd &&
-                  globalFrame <= narEnd + DUCK_RAMP_FRAMES
+                  globalFrame >= speechEnd &&
+                  globalFrame <= speechEnd + DUCK_RAMP_FRAMES
                 ) {
                   duckedTarget = interpolate(
                     globalFrame,
-                    [narEnd, narEnd + DUCK_RAMP_FRAMES],
+                    [speechEnd, speechEnd + DUCK_RAMP_FRAMES],
                     [duckedVolume, normalVolume],
                     CLAMP
                   );
                 }
               }
 
+              for (const sfx of media.sfx ?? []) {
+                const distance = Math.abs(globalFrame - sfx.startFrame);
+                if (distance < 9) duckedTarget *= 1 - (settings?.sfxDuckAmount ?? .2) * (1 - distance / 9);
+              }
               const fadeMultiplier = computeFadeMultiplier(
                 localFrame,
                 bgDuration,
@@ -165,7 +176,7 @@ export const AudioTrack: React.FC<AudioTrackProps> = ({
                 bgMusic.fadeOutFrames ?? DEFAULT_BG_FADE_FRAMES
               );
 
-              return clampVolume(duckedTarget * fadeMultiplier);
+              return clampVolume(duckedTarget * fadeMultiplier * (settings?.volume ?? 1));
             }}
           />
         </Sequence>
@@ -186,8 +197,8 @@ export const AudioTrack: React.FC<AudioTrackProps> = ({
             layout="none"
           >
             <Audio
-              src={staticFile(src)}
-              volume={clampVolume(sfx.volume ?? 0.8)}
+              src={mediaSource(src)}
+              volume={clampVolume((sfx.volume ?? 0.8) * (settings?.volume ?? 1))}
             />
           </Sequence>
         );

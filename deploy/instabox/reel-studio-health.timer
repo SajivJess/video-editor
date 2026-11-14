@@ -1,0 +1,12 @@
+[Unit]
+Description=Check reel studio every 29 minutes while the machine is awake
+
+[Timer]
+OnBootSec=29min
+OnUnitActiveSec=29min
+AccuracySec=1min
+WakeSystem=false
+Unit=reel-studio-health.service
+
+[Install]
+WantedBy=timers.target

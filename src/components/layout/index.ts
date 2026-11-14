@@ -1,6 +1,10 @@
+export { BackgroundVideoLayer } from './BackgroundVideoLayer';
+export type { BackgroundVideoLayerProps } from './BackgroundVideoLayer';
+export { TopVisualRegion } from './TopVisualRegion';
+export type { TopVisualRegionProps } from './TopVisualRegion';
+export { CaptionRegion, CAPTION_SAFE_PADDING } from './CaptionRegion';
+export type { CaptionRegionProps } from './CaptionRegion';
 export { BrollRegion } from './BrollRegion';
 export type { BrollRegionProps } from './BrollRegion';
 export { FacecamRegion } from './FacecamRegion';
 export type { FacecamRegionProps } from './FacecamRegion';
-export { CaptionRegion, CAPTION_SAFE_PADDING } from './CaptionRegion';
-export type { CaptionRegionProps } from './CaptionRegion';

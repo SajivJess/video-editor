@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+.env
+.env.*
+!.env.example
 
 # Remotion build & render outputs
 build/
@@ -10,9 +13,39 @@ Output/*
 # Media & raw footage (keep directory via .gitkeep)
 public/*
 !public/.gitkeep
+!public/fonts/
+!public/fonts/**
+!public/logos/
+!public/logos/**
+!public/images/
+!public/images/**
+!public/audio/
+!public/audio/**
 
 # Logs & OS files
 *.log
 npm-debug.log*
 .DS_Store
 Thumbs.db
+
+# Local transcription environment and model downloads
+.venv/
+.models/
+
+scratch_analysis/transcript_recovered.json
+
+__pycache__/
+*.pyc
+
+# Private input media and one-off analysis remain local
+Input/*
+!Input/.gitkeep
+scratch_analysis/
+ref/*.mp4
+ref/extracted_video_samples/
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.m4v

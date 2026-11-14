@@ -50,8 +50,6 @@ export const EditorialBadge: React.FC<EditorialBadgeProps> = ({
         borderRadius: 999,
         backgroundColor,
         border: `2px solid ${accentColor}`,
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.55)',
         maxWidth: '90%',
         ...style,

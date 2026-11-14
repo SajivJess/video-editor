@@ -27,8 +27,10 @@ export const useFadeInOut = (
     return 0;
   }
 
-  const safeFadeIn = Math.max(0, fadeInFrames);
-  const safeFadeOut = Math.max(0, fadeOutFrames);
+  const totalFade = Math.max(0, fadeInFrames) + Math.max(0, fadeOutFrames);
+  const fadeScale = totalFade > duration ? duration / totalFade : 1;
+  const safeFadeIn = Math.max(0, fadeInFrames) * fadeScale;
+  const safeFadeOut = Math.max(0, fadeOutFrames) * fadeScale;
 
   const fadeIn =
     safeFadeIn === 0

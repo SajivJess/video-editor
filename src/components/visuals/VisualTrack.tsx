@@ -1,10 +1,10 @@
+import { mediaSource } from '../../utils/media';
 import React from 'react';
 import {
   Img,
   OffthreadVideo,
   Sequence,
   interpolate,
-  staticFile,
   useCurrentFrame,
 } from 'remotion';
 import { THEME } from '../../config/theme';
@@ -34,14 +34,13 @@ const VisualSegmentView: React.FC<VisualSegmentViewProps> = ({ segment }) => {
 
   let transform: string | undefined;
   if (segment.kenBurns) {
-    const {
-      fromScale,
-      toScale,
-      fromX = 0,
-      toX = 0,
-      fromY = 0,
-      toY = 0,
-    } = segment.kenBurns;
+    const kb = segment.kenBurns;
+    const fromScale = kb.fromScale ?? kb.startScale ?? 1.0;
+    const toScale = kb.toScale ?? kb.endScale ?? 1.08;
+    const fromX = kb.fromX ?? kb.startX ?? 0;
+    const toX = kb.toX ?? kb.endX ?? 0;
+    const fromY = kb.fromY ?? kb.startY ?? 0;
+    const toY = kb.toY ?? kb.endY ?? 0;
 
     const scale = interpolate(
       frame,
@@ -91,13 +90,14 @@ const VisualSegmentView: React.FC<VisualSegmentViewProps> = ({ segment }) => {
           layout="none"
         >
           <OffthreadVideo
-            src={staticFile(segment.src)}
+            startFrom={segment.sourceStartFrame ?? 0}
+            src={mediaSource(segment.src)}
             muted
             style={mediaStyle}
           />
         </Sequence>
       ) : (
-        <Img src={staticFile(segment.src)} style={mediaStyle} />
+        <Img src={mediaSource(segment.src)} style={mediaStyle} />
       )}
 
       {segment.label && (

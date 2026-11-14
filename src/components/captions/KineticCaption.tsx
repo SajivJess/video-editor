@@ -76,8 +76,6 @@ export const KineticCaption: React.FC<KineticCaptionProps> = ({
         background: resolvedTheme.bgPanel,
         borderRadius: theme?.borderRadius ?? 20,
         padding: '16px 28px',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.12)',
         boxShadow: resolvedTheme.shadowStyle,
         textAlign: 'center',
@@ -87,7 +85,7 @@ export const KineticCaption: React.FC<KineticCaptionProps> = ({
       <span
         style={{
           display: 'block',
-          fontSize: 38,
+          fontSize: resolvedTheme.captionFontSize ?? 38,
           fontWeight: resolvedTheme.fontWeight,
           color: resolvedTheme.primaryText,
           lineHeight: 1.32,

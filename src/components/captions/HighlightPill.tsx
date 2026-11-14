@@ -1,3 +1,4 @@
+import type { ThemeSettings } from '../../types/project';
 import React from 'react';
 import { useCurrentFrame } from 'remotion';
 import { THEME } from '../../config/theme';
@@ -7,6 +8,7 @@ import { useFadeInOut, useSpringScale } from '../animations';
 import { VectorIcon } from '../graphics/Icons';
 
 export interface HighlightPillProps {
+  theme?: Partial<ThemeSettings>;
   text: string;
   keywords?: string[];
   startFrame: number;
@@ -16,6 +18,7 @@ export interface HighlightPillProps {
 }
 
 export const HighlightPill: React.FC<HighlightPillProps> = ({
+  theme,
   text,
   keywords = [],
   startFrame,
@@ -23,6 +26,7 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
   pillColor,
   iconName,
 }) => {
+  const resolved = { ...THEME, ...theme };
   const frame = useCurrentFrame();
   const opacity = useFadeInOut(startFrame, endFrame, 10, 6);
   const scale = useSpringScale(startFrame, 0.88, 1);
@@ -47,7 +51,7 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
         borderRadius: 999,
         background: pillColor ?? '#1a1a2e',
         border: '2px solid rgba(255,255,255,0.18)',
-        boxShadow: THEME.shadowStyle,
+        boxShadow: resolved.shadowStyle,
         padding: '14px 32px',
         maxWidth: '92%',
       }}
@@ -70,11 +74,11 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
           whiteSpace: 'normal',
           overflowWrap: 'break-word',
           textAlign: iconName ? 'left' : 'center',
-          fontSize: 32,
-          fontWeight: THEME.fontWeight,
+          fontSize: resolved.captionFontSize ?? 32,
+          fontWeight: resolved.fontWeight,
           lineHeight: 1.3,
-          fontFamily: THEME.fontFamily,
-          color: THEME.primaryText,
+          fontFamily: resolved.fontFamily,
+          color: resolved.primaryText,
         }}
       >
         {tokens.map((token, index) => (
@@ -83,14 +87,14 @@ export const HighlightPill: React.FC<HighlightPillProps> = ({
             {token.highlight ? (
               <span
                 style={{
-                  color: THEME.highlightColor,
+                  color: resolved.highlightColor,
                   fontWeight: 900,
                 }}
               >
                 {token.word}
               </span>
             ) : (
-              <span style={{ color: THEME.primaryText }}>{token.word}</span>
+              <span style={{ color: resolved.primaryText }}>{token.word}</span>
             )}
           </React.Fragment>
         ))}

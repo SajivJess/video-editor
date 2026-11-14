@@ -12,7 +12,9 @@ export type VectorIconName =
   | 'warning'
   | 'lock'
   | 'check'
-  | 'chart';
+  | 'chart'
+  | 'sparkle'
+  | 'chip';
 
 export type VectorIconSize = 'sm' | 'md' | 'lg' | number;
 
@@ -166,6 +168,23 @@ const renderIconPaths = (name: VectorIconName, color: string): React.ReactNode =
           <rect x="16.5" y="7" width="3" height="12.5" rx="0.6" />
           <path d="M4.5 10.5L10.5 6.8L14.2 8.8L19.5 4" />
           <path d="M16.5 4H19.5V7" />
+        </>
+      );
+
+    case 'sparkle':
+      return (
+        <>
+          <path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z" fill={color} />
+          <path d="M19 16L19.8 18.2L22 19L19.8 19.8L19 22L18.2 19.8L16 19L18.2 18.2L19 16Z" fill={color} />
+        </>
+      );
+
+    case 'chip':
+      return (
+        <>
+          <rect x="5" y="5" width="14" height="14" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 1V5M15 1V5M9 19V23M15 19V23M1 9H5M1 15H5M19 9H23M19 15H23" />
         </>
       );
   }

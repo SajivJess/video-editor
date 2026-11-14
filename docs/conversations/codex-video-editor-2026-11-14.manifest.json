@@ -1,0 +1,40 @@
+{
+  "threadId": "01a1d46f-0ed6-7ee2-8c4a-245538dc87ac",
+  "coverageStartUtc": "2026-11-13T10:23:33.565Z",
+  "coverageEndUtc": "2026-11-14T10:02:38.586Z",
+  "messageCount": 158,
+  "roleCounts": {
+    "user": 34,
+    "assistant": 124
+  },
+  "phaseCounts": {
+    "message": 31,
+    "commentary": 92,
+    "final_answer": 25,
+    "question": 7,
+    "question-answer": 3
+  },
+  "sourceVisibleItemCounts": {
+    "rollout-2026-11-13T15-53-30-01a1d46f-0ed6-7ee2-8c4a-245538dc87ac.jsonl": 31,
+    "rollout-2026-11-13T18-39-48-01a1d46f-0ed6-7ee2-8c4a-245538dc87ac_01a1d507-5032-7532-8415-a91f562166f8.jsonl": 12,
+    "rollout-2026-11-13T20-55-04-01a1d46f-0ed6-7ee2-8c4a-245538dc87ac_01a1d583-2541-7a32-9995-5f4d6e8e0266.jsonl": 100
+  },
+  "duplicateStorageRecordsOmitted": 108,
+  "fallbackAssistantRecords": 5,
+  "firstMessageId": "01a1d46f-1aaf-7160-9b2a-18de62dc6de9",
+  "lastMessageId": "msg_0fa0bed08b7efafb016af831bcfd6c87d08f0f0607b4a4a816",
+  "redactions": {},
+  "attachmentCount": 1,
+  "attachmentPolicy": "References only; SSH credential screenshot intentionally omitted.",
+  "sourceReplacementCharacters": 0,
+  "markdownSha256": "5d9ad26ded16c7020f9a0a93c66d320dc78951eca5cee47b29dc8fd8366c0ce0",
+  "jsonlSha256": "c775fe5583ef509481b903b65c523f82aa72009a544b155aef4f2296ebee2275",
+  "exclusions": [
+    "internal reasoning",
+    "system/developer messages",
+    "environment injections",
+    "arbitrary tool outputs",
+    "credentials",
+    "raw session files"
+  ]
+}
